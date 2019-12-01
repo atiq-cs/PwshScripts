@@ -2,12 +2,9 @@
 .SYNOPSIS
 Initialize Powershell Core Environment
 .DESCRIPTION
- 1. Initialize variables; set network status
- 2. Fix first time situations when profile does not exist, git is not installed
- 3. Set net
-
+ 
 .PARAMETER psConsoleType
-Console type, for adding python for ML Env
+Console type: for future use, `Init-App` replaces it for now.
 
 .EXAMPLE
  pwsh -NoExit Init.ps1
@@ -41,6 +38,9 @@ just method name
 #>
 function InitializeScript() {
   cd $Env:PwshScriptDir
+  # Set up variables for Program Files, ToDo: generalize
+  $Env:PFilesX64 = 'D:\PFiles_x64\choco'
+  $Env:PFilesX86 = 'D:\PFiles_x86\choco'
 }
 
 function ResizeConsole([string] $title, [int] $history_size, [int] $width, [int] $height) {
@@ -184,30 +184,44 @@ function GetProcessInstanceNumber([string] $process)
   @(Get-Process $process -ErrorAction 0).Count
 }
 
-function AddToEnvPath([string] $path = ';') {
-  if ($Env:Path.Contains($path) -Eq $False) {
-    $Env:Path += ';'+$path
-  }
+# Brief help
+function ShowHelp {
+  Write-Host "
+SAOS Enterprise users only: pivileged, no 2fac.
+Operating System Kernel Build
+Net Core Build
+PW Shell Version
+
+Supported additional application paths,
+- Chrome
+- Code
+- CVpn-Client
+- DevEnv
+- KeePass
+- notepad++
+- sgdm (DiffMerge)
+- Skype
+- WinRar
+- Workchat
+"
 }
 
 #####################    Function Definition Ends       #####################################
 #######################################################################################################
 
 function Main() {
-  # Set up variables for Program Files, ToDo: generalize
-  $Env:PFilesX64 = 'D:\PFiles_x64\choco'
-  $Env:PFilesX86 = 'D:\PFiles_x86\choco'
+  InitializeScript
+  .\Init-App resetEnvPath
 
   if (SingleInstanceRunning pwsh) {
     # Add pwsh script dir to Path
-    AddToEnvPath $Env:PwshScriptDir
+    .\Init-App pwsh
   }
   else {
     $n = GetProcessInstanceNumber 'pwsh'
     Write-Host -NoNewline "Initializing powershell instance $n.."
   }
 
-  InitializeScript
   ApplySettings $($Env:PHOST_TYPE -eq 'Office')
 
   if (SingleInstanceRunning) {
@@ -216,7 +230,7 @@ function Main() {
     # for some reason it keeps failing if I put it after 'ss help'
     if ($psConsoleType -eq 'ML') {
       # ToDo: remove hardcoded
-      AddToEnvPath 'D:\PFiles_x64\choco\python3;D:\PFiles_x64\choco\python3\Scripts'
+      .\Init-App python
     }
 
     # Start other most frequently opened processes
@@ -226,8 +240,7 @@ function Main() {
     Write-Host  "`t`t`[Ready`]"
   }
 
-  # Show brief help
-  .\ss help
+  ShowHelp
 }
 
 Main
