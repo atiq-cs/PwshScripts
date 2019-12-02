@@ -2,7 +2,7 @@
 .SYNOPSIS
 Add new Application to registry
 .DESCRIPTION
-Modify Env Path
+This adds `Start-Process` support for an app
 .PARAMETER AppName
 name of app to register
 .PARAMETER Path
@@ -21,6 +21,8 @@ Required following Env Vars,
 
 ## References
 https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.management/new-itemproperty
+
+tag: windows-only-script
 #>
 
 Param (
@@ -33,6 +35,7 @@ function Main() {
     return 
   }
 
+  # Remove before, if entry already exists
   # Remove-Item -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\$AppName.exe"
   # return
   if ((Test-Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\$AppName.exe") -Or (Test-Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\$AppName.exe")) {
