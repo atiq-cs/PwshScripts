@@ -50,6 +50,7 @@ function Main() {
       AddToEnvPath $($Env:ProgramFiles + '\dotnet')
       return
     }
+    # planned deprecation by 'Git Util' net core app
     'git' {
       AddToEnvPath $($Env:PFilesX64 + '\git\cmd')
       return
