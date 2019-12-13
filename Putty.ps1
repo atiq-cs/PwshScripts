@@ -52,12 +52,17 @@ function Main() {
         exit
     }
 
+
+
     # initialize for commandline
 
     # Allow to login without config
     # Use [string]::IsEmptyOrNull instead
     if (! $ConfigName.Equals("")) {
         Write-Host "Starting putty with default config for $ConfigName."
+        # Additionally could utilize
+        #  [bool] $(Test-Connection -Count 1 google.com)
+        # retrieving servername from registry
         if ($UserName.Equals("")) {
             & $PUTTYEXE -load $ConfigName
         }
@@ -82,7 +87,7 @@ function Main() {
 
     # User name to root
     if ($UserName.Equals("")) {
-        if ($HOST_TYPE.Equals("Office")) { $UserName="atiq" }
+        if ($HOST_TYPE.Equals("Office")) { $UserName=$Env:UserName }
         else { $UserName="root" }
         Write-Host "Default user name: $UserName."
     }

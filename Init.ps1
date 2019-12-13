@@ -129,8 +129,9 @@ function ApplySettings([bool] $IsWorkPlace = $false) {
 
 # Currently only updates fftsys repository using git
 function UpdateCoreRepo() {
+  bin\GitUtil --repo-path $PWD.Path --action pullMaster
   # git pull origin master
-  Write-Host "Use Git Util instead."
+  Write-Host "GitUtil: Code updated silently, otherwise expect exception from core framework"
 }
 
 # This should be improved
