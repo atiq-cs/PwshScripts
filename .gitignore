@@ -1,0 +1,8 @@
+## Ignore generated files by tools, dynamically generated configuration files and log files
+# git related
+
+# Binary directory, includes redistributables
+bin/
+
+# logs for tools, utilities scripts and binaries
+log/
