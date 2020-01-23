@@ -36,7 +36,9 @@ function Main() {
       # choco sources list
       # choco source add -n=chocolatey -s="https://chocolatey.org/api/v2/"
       # choco source remove -n cpe_client
-      AddToEnvPath 'D:\PFiles_x64\chocolatey\bin'
+      $Env:ChocolateyInstall = 'D:\PFiles_x64\Chocolatey'
+      $Env:ChocolateyToolsLocation = 'D:\PFiles_x64\chocolatey\tools'
+      AddToEnvPath $Env:ChocolateyInstall + '\bin'
       return
     }
     # restore path to default

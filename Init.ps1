@@ -150,7 +150,10 @@ function Start-Process-Single([string] $ProcessRunCommand, [string] $ProcessName
   elseif ($IsRegAppPath) {
     Write-Host "Starting $ProcessName"
     # this for fb dev-vm
-    if ($ProcessRunCommand -eq 'chrome') { Start-Process $ProcessRunCommand --ignore-certificate-errors }
+    if ($ProcessRunCommand -eq 'chrome') {
+      # Start-Process $ProcessRunCommand --ignore-certificate-errors
+      Start-Process $ProcessRunCommand
+    }
     else { Start-Process $ProcessRunCommand }
     # some time for monster chrome to consume resources
     if ($ProcessRunCommand -eq 'chrome') { Start-Sleep 2 }
