@@ -56,5 +56,5 @@ function prompt {
       $PHOST_TYPE }) + " $(Get-DirAlias)]$ "
 }
 
-# Finally, some actions here
+# Commands to set up new shell
 Push-Location $PwshScriptDir

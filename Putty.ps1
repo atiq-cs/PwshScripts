@@ -14,12 +14,10 @@ Putty.ps1 -s 192.168.20.38 -u UserName
 Putty.ps1 -l sun-x4600m2-s12_x86
 
 .NOTES
-Initial write: 01/26/2012
-
 it creates `-PropertyType MultiString` if not specified.
 
-Required following Env Vars,
-- $Env:PFilesX64
+Required following Vars,
+- $PFilesX64Dir
 
 for debug print,
     Write-Host "$PUTTYEXE -ssh $serverIP -l $username -pw $pass"
@@ -45,26 +43,43 @@ Param(
 
 # Start of Main function
 function Main() {
-    $PUTTYEXE = "$Env:PFilesX64\Putty\putty.exe"
+    $PUTTYEXE = $PFilesX64Dir + '\Putty\putty.exe'
 
     if (! (Test-Path -Type Leaf -path $PUTTYEXE)) {
         Write-Host "Please correct putty path and then run the script again.`n"
         exit
     }
 
+    if ([string]::IsNullOrEmpty($ConfigName) -Or ! $ConfigName.Contains('vm-fb')) {
+        $hostName = 'google.com'
+        if (! (Test-Connection $hostName -Count 1)) {
+            Write-Host -ForegroundColor Red 'Cannot connect to ' + $hostName + '!'
+            exit
+        }
+        'Connected to ' + $hostName + '.'
+    }
 
 
-    # initialize for commandline
+    # Initialize for commandline
 
     # Allow to login without config
     # Use [string]::IsEmptyOrNull instead
-    if (! $ConfigName.Equals("")) {
+    if (! [string]::IsNullOrEmpty($ConfigName)) {
+        if ($ConfigName.Contains('vm-fb')) {
+            $hostName = Get-ItemPropertyValue ('HKCU:Software\SimonTatham\PuTTY\Sessions\' + $ConfigName) -Name HostName
+            if (! (Test-Connection $hostName -Count 1)) {
+                Write-Host -ForegroundColor Red 'Cannot connect to ' + $hostName + '!'
+                exit
+            }
+            'Connected to ' + $hostName + '.'
+        }
+
         Write-Host "Starting putty with default config for $ConfigName."
         # Additionally could utilize
         #  [bool] $(Test-Connection -Count 1 google.com)
         # retrieving servername from registry
         if ($UserName.Equals("")) {
-            & $PUTTYEXE -load $ConfigName
+            Start-Process $PUTTYEXE -ArgumentList '-load',$ConfigName
         }
         else {
             & $PUTTYEXE -load $ConfigName -l $UserName
@@ -74,7 +89,7 @@ function Main() {
 
     if (! $ShowVersion.Equals("")) {
         Write-Host "Version info uses pLink"
-        $PLINKEXE = "$Env:PFilesX64\Putty\plink.exe"
+        $PLINKEXE = "$PFilesX64Dir\Putty\plink.exe"
         & $PLINKEXE -V
         exit
     }

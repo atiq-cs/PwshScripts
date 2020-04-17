@@ -4,13 +4,15 @@ Minimal Initialization Script for Powershell Core Environment
 .DESCRIPTION
  
 .EXAMPLE
+ pwsh -NoExit -NoLogo -File D:\pwsh-scripts\Init.ps1
  pwsh -NoExit Init.ps1
 
 .NOTES
 Verify defined vars in $PROFILE
 Add support for arg ' ML' to `Init-App` script
 
-Defaulting to old ways for color initialization, using RGB Color: {1, 32, 72}
+Defaulting to old way: change color from property for color initialization, using RGB Color:
+  {1, 32, 72}
 
 Run only first time,
 Set $Env:ChocolateyInstall, ChocolateyToolsLocation
@@ -21,7 +23,7 @@ Deps,
 - $PFilesX86Dir
 #>
 
-##########################  Function Definition Starts  ##########################
+##########################  Function Definition Starts  ########################
 ################################################################################
 # Currently only updates fftsys repository using git
 function UpdateCoreRepo() {
@@ -39,29 +41,25 @@ Minimal init for Console UI
 InitConsoleUI
 #>
 function InitConsoleUI() {
-  (Get-Host).UI.RawUI.WindowTitle = $(if ($PHOST_TYPE -Eq 'office' ) { "FB Workstation" } else { "Matrix Workstation" })
+  (Get-Host).UI.RawUI.WindowTitle = $(if ($PHOST_TYPE -Eq 'office' ) { "FB Terminal" } else { "Matrix Terminal" })
 }
 
 # Brief help
 function ShowHelp() {
-  Write-Host "
-SAOS Enterprise users only: pivileged, no 2fac.
-Operating System Kernel Build
-Net Core Build
-PW Shell Version
-
-Supported additional application paths,
+  Write-Host '
+Startx Apps,
 - Chrome
+- CodeFB
 - Code
-- CVpn-Client
+- CVpn-Connect and Disconnect
 - DevEnv
 - KeePass
+- Messenger
 - Notepad++
 - Sgdm (DiffMerge)
-- Skype
-- WinRar
+- WhatsApp
 - Workchat
-"
+'
 }
 
 ##########################  Function Definition Ends  ##########################
@@ -69,9 +67,16 @@ Supported additional application paths,
 
 
 function Main() {
+  # get dot core latest version
+  $netCmd = $Env:ProgramFiles + '\dotnet\dotnet' 
+  $index = ((& $netCmd --list-sdks).Count -1)
+  $netCoreVersion = (& $netCmd --list-sdks)[$index]
+
+  'pwsh ' + [string] $PSVersionTable.PSVersion + ' on ' + [string] $PSVersionTable.OS + ', powered by net core sdk ' + $netCoreVersion + '
+'
   .\Init-App resetEnvPath
   InitConsoleUI
-  # UpdateCoreRepo
+  UpdateCoreRepo
   # StartCustomPrcoesses
 
   ShowHelp
