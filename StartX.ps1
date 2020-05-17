@@ -62,7 +62,7 @@ function AddToEnvPath([string] $path = ';') {
   }
 }
 
-function InitFBEnvironment([string] $authTokenFromVpn = '') {
+function InitFBEnvironment([string] $authToken = '') {
   # required to set only once across all pwsh instances
   $Env:ChocolateyToolsLocation = 'D:\PFiles_x64\chocolatey\tools'
   # this is required for all FB App Launches
@@ -74,6 +74,8 @@ function InitFBEnvironment([string] $authTokenFromVpn = '') {
     Write-Host 'cc-cert binary is not found!'
     exit
   }
+
+  Write-Host -NoNewline 'Waiting for status from cc-certs..'
   $authStatus = (& $CCCertsExe -cert_expirations -cert_list ssh-user | ConvertFrom-Json).'ssh-user'
   if ($authStatus -Eq 'expired') {
     Write-Host -ForegroundColor Red ' Authentication token expired!'
@@ -87,14 +89,14 @@ function InitFBEnvironment([string] $authTokenFromVpn = '') {
         exit
     }
 
-    if ($authTokenFromVpn -Eq '') { $authToken = Read-Host "Please enter duo push" }
-    else { $authToken = $authTokenFromVpn }
+    if ($authToken -Eq '') { $authToken = Read-Host "Please enter duo push" }
+    else { $authToken = $authToken }
 
     & $CCCertsExe -cert_list x509-user,ssh-user,x509-presto,x509-mysql -duo_pass $authToken
   }
   else {
     $ts = [timespan]::fromseconds([int] $authStatus)
-    'cc-cert expires in: ' + ("{0:hh\:mm\:ss}" -f $ts)
+    "`rcc-cert expires in: " + ("{0:hh\:mm\:ss}" -f $ts) + '      '
   }
 }
 
@@ -102,7 +104,7 @@ function RunHotCmd([string] $AppName) {
   # For apps that are just short cut commands
   switch( $AppName ) {
     'pwsh' { # elevated
-      Start-Process pwsh -ArgumentList '-NoExit', 'Init-App.ps1 admin' -Verb Runas -ErrorAction 'stop'
+      Start-Process pwsh -ArgumentList '-NoExit', '-NoLogo', 'Init-App.ps1 admin' -Verb Runas -ErrorAction 'stop'
     }
     default {
       return $False
@@ -259,6 +261,7 @@ function StartProcess([string] $AppName) {
         ("connect `"Americas West`"`r`n" + $authToken + "`r`nexit") | & $BinaryPath -s
         Pop-Location
 
+        # During WFH period, suffer the slowness of `cc-cert`
         InitFBEnvironment
 
         SetEnvPath($oldEnvPath)
@@ -274,6 +277,10 @@ function StartProcess([string] $AppName) {
       $VPNService = 'VPNAgent'
 
       if ((Get-Service $VPNService).Status -Eq 'Running') {
+        InitFBEnvironment
+        SetEnvPath($oldEnvPath)
+        Remove-Item Env:ChocolateyToolsLocation
+
         Push-Location $BinaryDir
         & $BinaryPath disconnect
         Pop-Location
@@ -288,8 +295,8 @@ function StartProcess([string] $AppName) {
     }
   }
 
-  SetEnvPath($oldEnvPath)
-  if (Test-Path Env:ChocolateyToolsLocation) { Remove-Item Env:ChocolateyToolsLocation }
+  # SetEnvPath($oldEnvPath)
+  # if (Test-Path Env:ChocolateyToolsLocation) { Remove-Item Env:ChocolateyToolsLocation }
   
   if ([string]::IsNullOrEmpty($RedirectStandardOutVal) -And [string]::IsNullOrEmpty(
       $RedirectStandardErrVal)) {

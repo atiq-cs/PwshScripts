@@ -5,7 +5,7 @@ Minimal Initialization Script for Powershell Core Environment
  
 .EXAMPLE
  pwsh -NoExit -NoLogo -File D:\pwsh-scripts\Init.ps1
- pwsh -NoExit Init.ps1
+
 
 .NOTES
 Verify defined vars in $PROFILE
@@ -23,8 +23,6 @@ Deps,
 - $PFilesX86Dir
 #>
 
-##########################  Function Definition Starts  ########################
-################################################################################
 # Currently only updates fftsys repository using git
 function UpdateCoreRepo() {
   bin\GitUtil --repo-path $PWD.Path --action pullMaster
@@ -62,17 +60,29 @@ Startx Apps,
 '
 }
 
-##########################  Function Definition Ends  ##########################
-################################################################################
+<#
+.SYNOPSIS
+The Main Method that calls initialization components
+.DESCRIPTION
+Modify Env Path
 
+Adding 'C:\Tools' Usually not required: do a cc-certs renewal based on expiration value and the
+dialog box for init won't appear to bother us again! Tools is deprecated by ChocolateyToolsLocation
+
+.EXAMPLE
+.\Init
+.NOTES
+Refs,
+- https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet
+#>
 
 function Main() {
   # get dot core latest version
-  $netCmd = $Env:ProgramFiles + '\dotnet\dotnet' 
+  $netCmd = $PFilesX64Dir + '\dotnet\dotnet'
   $index = ((& $netCmd --list-sdks).Count -1)
   $netCoreVersion = (& $netCmd --list-sdks)[$index]
 
-  'pwsh ' + [string] $PSVersionTable.PSVersion + ' on ' + [string] $PSVersionTable.OS + ', powered by net core sdk ' + $netCoreVersion + '
+  'Core ' + [string] $PSVersionTable.PSVersion + ' on ' + [string] $PSVersionTable.OS + ', powered by net core sdk ' + $netCoreVersion + '
 '
   .\Init-App resetEnvPath
   InitConsoleUI

@@ -4,13 +4,14 @@ Initialize Specified Application
 .DESCRIPTION
 Modify Env Path
 
-ToDo: add support for admin prompt
- dim: 152x18
-rename Title for admin prompt
+ToDo: set dim: 152x18
+
 .PARAMETER AppName
 name of app for which to init
 Should also replace functionalities provided by PARAM psConsoleType
 Console type: for future use, `Init-App` replaces it for now.
+
+ToDo: except array of strings instead of a string
 .EXAMPLE
  Init-App
 is equivalent to,
@@ -41,6 +42,10 @@ function AddToEnvPath([string] $path = ';') {
 The Main function of this Script
 .DESCRIPTION
 Modify Env Path
+
+Adding 'C:\Tools' Usually not required: do a cc-certs renewal based on expiration value and the
+dialog box for init won't appear to bother us again! Tools is deprecated by ChocolateyToolsLocation
+
 .PARAMETER InitType
 Customized init based on type
 .EXAMPLE
@@ -58,14 +63,11 @@ function InitVariables([string] $InitType = 'resetEnvPath') {
       return
     }
     'choco' {
-      $CPEPath = 'C:\WINDOWS\CPE\lib\powershell'
-      if ($Env:PSModulePath.Contains($path) -Eq $False) { $Env:PSModulePath += ';' + $CPEPath }
-
       # choco sources list
       # choco source add -n=chocolatey -s="https://chocolatey.org/api/v2/"
       # choco source remove -n cpe_client
       $Env:ChocolateyInstall = 'D:\PFiles_x64\Chocolatey'
-      $Env:ChocolateyToolsLocation = 'D:\PFiles_x64\chocolatey\tools'
+      $Env:ChocolateyToolsLocation = $Env:ChocolateyInstall +'\tools'
       AddToEnvPath( $Env:ChocolateyInstall + '\bin' )
       return
     }
@@ -77,25 +79,30 @@ function InitVariables([string] $InitType = 'resetEnvPath') {
       $Env:Path = 'C:\windows\system32;C:\windows;C:\windows\System32\Wbem;' + $Env:LOCALAPPDATA +
         '\Microsoft\WindowsApps;C:\windows\System32\WindowsPowerShell\v1.0;' + $PSHOME + ';' +
         $PwshScriptDir
+
+      if (Test-Path Env:DOTNET_ROOT) { Remove-Item Env:DOTNET_ROOT }
+
       return
     }
     # rest are path updates
     'dotnet' {
       # decoration '$(' is required to not consider space as argument delimeter
-      AddToEnvPath( $Env:ProgramFiles + '\dotnet' )
+      $Env:DOTNET_ROOT = $PFilesX64Dir + '\dotnet'
+      if (! (Test-Path $Env:DOTNET_ROOT)) {
+        'Please install net core'
+        New-Item -ItemType Directory $Env:DOTNET_ROOT
+      }
+      AddToEnvPath( $Env:DOTNET_ROOT )
       return
     }
-    'fb-tools' {  # required for analyze tooling
+    'fb-tools' {  # required to utilize tooling
+      InitVariables choco
       # CPE\lib to PSModulePath, firt line is FB only
-      $Env:PSModulePath += ';C:\WINDOWS\CPE\lib\powershell'
-      # set choco paths but don't add to PATH, hence slightly different than `InitVariables choco`
-      $Env:ChocolateyInstall = 'D:\PFiles_x64\Chocolatey'
-      $Env:ChocolateyToolsLocation = 'D:\PFiles_x64\chocolatey\tools'
-      AddToEnvPath $Env:ChocolateyToolsLocation
+      $CPEPath = 'C:\WINDOWS\CPE\lib\powershell'
+      if ($Env:PSModulePath.Contains($CPEPath) -Eq $False) { $Env:PSModulePath += ';' + $CPEPath }
+
+      # ssh support for VSCode
       AddToEnvPath($Env:ChocolateyToolsLocation + '\fb.gitbash\usr\bin')
-      # Usually not required: do a cc-certs renewal based on expiration value and the
-      # dialog box for init won't appear again!
-      # AddToEnvPath 'C:\Tools'
       return
     }
     # planned deprecation by 'Git Util' net core app

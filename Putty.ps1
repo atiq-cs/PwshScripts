@@ -8,11 +8,12 @@ name of app to register
 .PARAMETER Path
 actual binary path
 .EXAMPLE
-Putty.ps1 -l devvm-fb1
-Putty.ps1 -V $True
-Putty.ps1 -s 192.168.20.38 -u UserName
-Putty.ps1 -l sun-x4600m2-s12_x86
-
+Putty.ps1 -configName devvm-fb1
+Putty.ps1 -version $true
+Putty.ps1 -serverIP atiq.vm.azure.com -userName atiq
+Putty.ps1 -serverIP 192.168.20.38 -u UserName
+Putty.ps1 -configName sun-x4600m2-s12_x86
+ 
 .NOTES
 it creates `-PropertyType MultiString` if not specified.
 
@@ -20,7 +21,7 @@ Required following Vars,
 - $PFilesX64Dir
 
 for debug print,
-    Write-Host "$PUTTYEXE -ssh $serverIP -l $username -pw $pass"
+    Write-Host "$PUTTYEXE -ssh $serverIP -l $userName -pw $pass"
 
 ## References
 - http://the.earth.li/~sgtatham/putty/0.58/htmldoc/Chapter3.html#using-general-opts
@@ -30,16 +31,12 @@ tag: cross-platform
 #>
 
 Param(
-    [alias("s")]
-    [string] $ServerIP,
-    [alias("u")]
-    [string] $UserName,
-    [alias("p")]
-    [long] $Port,
-    [alias("l")]
-    [string] $ConfigName,
-    [alias("V")]
-    [bool] $ShowVersion)
+    [string] $configName,
+    [string] $serverIP,
+    [string] $userName,
+    [string] $password,
+      [long] $port,
+      [bool] $version)
 
 # Start of Main function
 function Main() {
@@ -50,7 +47,7 @@ function Main() {
         exit
     }
 
-    if ([string]::IsNullOrEmpty($ConfigName) -Or ! $ConfigName.Contains('vm-fb')) {
+    if ([string]::IsNullOrEmpty($configName) -Or ! $configName.Contains('vm-fb')) {
         $hostName = 'google.com'
         if (! (Test-Connection $hostName -Count 1)) {
             Write-Host -ForegroundColor Red 'Cannot connect to ' + $hostName + '!'
@@ -64,9 +61,9 @@ function Main() {
 
     # Allow to login without config
     # Use [string]::IsEmptyOrNull instead
-    if (! [string]::IsNullOrEmpty($ConfigName)) {
-        if ($ConfigName.Contains('vm-fb')) {
-            $hostName = Get-ItemPropertyValue ('HKCU:Software\SimonTatham\PuTTY\Sessions\' + $ConfigName) -Name HostName
+    if (! [string]::IsNullOrEmpty($configName)) {
+        if ($configName.Contains('vm-fb')) {
+            $hostName = Get-ItemPropertyValue ('HKCU:Software\SimonTatham\PuTTY\Sessions\' + $configName) -Name HostName
             if (! (Test-Connection $hostName -Count 1)) {
                 Write-Host -ForegroundColor Red 'Cannot connect to ' + $hostName + '!'
                 exit
@@ -74,20 +71,27 @@ function Main() {
             'Connected to ' + $hostName + '.'
         }
 
-        Write-Host "Starting putty with default config for $ConfigName."
+        Write-Host "Starting putty with default config for $configName."
         # Additionally could utilize
         #  [bool] $(Test-Connection -Count 1 google.com)
         # retrieving servername from registry
-        if ($UserName.Equals("")) {
-            Start-Process $PUTTYEXE -ArgumentList '-load',$ConfigName
+        if ($userName.Equals("")) {
+            $args =  '-load', $configName
+            # $args =  '-ssh', '-2', $serverIP, '-l', $userName, '-pw', $password
+            #$args = $serverIP, '-l', $userName, '-pw', $password, '-i', 'D:\Doc\putty.ppk'
+            # $args = '-ssh', '-2', $serverIP, '-l', $userName, '-i', 'D:\Doc\putty.ppk'
+            
+            #  debug print
+            # [string]::Join(',', $args)
+            Start-Process $PUTTYEXE -ArgumentList $args
         }
         else {
-            & $PUTTYEXE -load $ConfigName -l $UserName
+            & $PUTTYEXE -load $configName -l $userName
         }
         exit
     }
 
-    if (! $ShowVersion.Equals("")) {
+    if (! $version.Equals("")) {
         Write-Host "Version info uses pLink"
         $PLINKEXE = "$PFilesX64Dir\Putty\plink.exe"
         & $PLINKEXE -V
@@ -95,25 +99,25 @@ function Main() {
     }
 
     # server defaults to 192.168.20.38
-    if ($ServerIP.Equals("")) {
-        $ServerIP="server.company.com"
-        Write-Host "Default server IP $ServerIP."
+    if ($serverIP.Equals("")) {
+        $serverIP="server.company.com"
+        Write-Host "Default server IP $serverIP."
     }
 
     # User name to root
-    if ($UserName.Equals("")) {
-        if ($HOST_TYPE.Equals("Office")) { $UserName=$Env:UserName }
-        else { $UserName="root" }
-        Write-Host "Default user name: $UserName."
+    if ($userName.Equals("")) {
+        if ($HOST_TYPE.Equals("Office")) { $userName=$Env:UserName }
+        else { $userName="root" }
+        Write-Host "Default user name: $userName."
     }
 
     # Default port is 22
-    if ($Port -eq 0) {
-        $Port="22"
+    if ($port -eq 0) {
+        $port="22"
     }
 
     Write-Host "Opening ssh session with putty: $PUTTYEXE"
-    & $PUTTYEXE -ssh -2 $ServerIP -l $UserName -P $Port
+    & $PUTTYEXE -ssh -2 $serverIP -l $userName -P $port
 }
 
 Main
