@@ -64,8 +64,8 @@ function Main() {
     if (! [string]::IsNullOrEmpty($configName)) {
         if ($configName.Contains('vm-fb')) {
             $hostName = Get-ItemPropertyValue ('HKCU:Software\SimonTatham\PuTTY\Sessions\' + $configName) -Name HostName
-            if (! (Test-Connection $hostName -Count 1)) {
-                Write-Host -ForegroundColor Red 'Cannot connect to ' + $hostName + '!'
+            if (! (Test-Connection $hostName -Count 1 -ErrorAction SilentlyContinue)) {
+                Write-Host -ForegroundColor Red 'Cannot connect to' $hostName'!'
                 exit
             }
             'Connected to ' + $hostName + '.'

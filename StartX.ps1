@@ -2,7 +2,8 @@
 .SYNOPSIS
 Start FB App
 .DESCRIPTION
-ToDo: utlize split-path
+ToDo: Utilize split-path
+ToDo: replace InitFBEnvironment with a lite-weight demon or app which sleeps most of the time..
 
 This application can be considered as an extension to Start-Process cmdlet. We perform
 initializations for some of the applications.
@@ -24,7 +25,7 @@ name of app for which to init
 
 .NOTES
 targetting apps i.e., WorkChat, WhatsApp, 
- 
+
 If Verbose is specified open a debug Window and redirect out
 
 Later, retrieve these values from a dictionary
@@ -72,11 +73,12 @@ function InitFBEnvironment([string] $authToken = '') {
   $CCCertsExe = $Env:ChocolateyToolsLocation + '\cc-certs.exe'
   if (!(Test-Path $CCCertsExe)) {
     Write-Host 'cc-cert binary is not found!'
-    exit
+    return
   }
 
   Write-Host -NoNewline 'Waiting for status from cc-certs..'
-  $authStatus = (& $CCCertsExe -cert_expirations -cert_list ssh-user | ConvertFrom-Json).'ssh-user'
+  $elapsedTimeMS = (Measure-Command { $authStatus = (& $CCCertsExe -cert_expirations -cert_list ssh-user | ConvertFrom-Json).'ssh-user' }).TotalMilliseconds
+  
   if ($authStatus -Eq 'expired') {
     Write-Host -ForegroundColor Red ' Authentication token expired!'
 
@@ -84,9 +86,9 @@ function InitFBEnvironment([string] $authToken = '') {
     $hostName = Get-ItemPropertyValue ('HKCU:Software\SimonTatham\PuTTY\Sessions\' + 
         $ConfigName) -Name HostName
 
-    if (! (Test-Connection $hostName -Count 1)) {
+    if (! (Test-Connection $hostName -Count 1 -ErrorAction SilentlyContinue)) {
         Write-Host -ForegroundColor Red 'We need to be on CorpNet to renew cert.'
-        exit
+        return 
     }
 
     if ($authToken -Eq '') { $authToken = Read-Host "Please enter duo push" }
@@ -96,7 +98,8 @@ function InitFBEnvironment([string] $authToken = '') {
   }
   else {
     $ts = [timespan]::fromseconds([int] $authStatus)
-    "`rcc-cert expires in: " + ("{0:hh\:mm\:ss}" -f $ts) + '      '
+    # Measure-command requires 
+    Write-Host ("`rcc-cert expires in: " + ("{0:hh\:mm\:ss}" -f $ts) + ' elapsed ' + $elapsedTimeMS + 'ms')
   }
 }
 
@@ -104,7 +107,9 @@ function RunHotCmd([string] $AppName) {
   # For apps that are just short cut commands
   switch( $AppName ) {
     'pwsh' { # elevated
+      Push-Location $PwshScriptDir
       Start-Process pwsh -ArgumentList '-NoExit', '-NoLogo', 'Init-App.ps1 admin' -Verb Runas -ErrorAction 'stop'
+      Pop-Location
     }
     default {
       return $False
@@ -136,6 +141,34 @@ function SetEnvPath([string] $NewPath) {
 
 <#
 .SYNOPSIS
+Second Method of this Script
+.DESCRIPTION
+Start Microsoft Store App
+
+The cmdlet does not support arguments for Store App URI yet. Hence, we invoke them in a new Window
+.PARAMETER AppName
+Store App URI
+.EXAMPLE
+StartProcessX Messenger:
+.NOTES
+ToDo: don't InitFB Environment here instead build a lite weight tool
+Temporary implementation, should be replaced by use of Dictionary
+Later, we would need args support just like `Start-Process` cmdlet
+
+For debug, utilize,
+ '-NoExit', 
+#>
+function StartProcessX([string] $AppName) {
+  if (! $AppName.EndsWith(':')) { return $False }
+
+  Start-Process pwsh -ArgumentList '-NoLogo', '-Command', ( 'Start ' + "$AppName") -ErrorAction 'Stop'
+
+  return $True
+}
+
+
+<#
+.SYNOPSIS
 Most important function of this Script
 .DESCRIPTION
 Modify Env Path
@@ -152,38 +185,8 @@ Later, we would need args support just like `Start-Process` cmdlet
 
 can override $AppName to actual name for some apps, right now, we are only doing
 this for `Code`
-
-### CVpn-Connect Refs
-
-  .\AppPathReg CVpn (${Env:ProgramFiles(x86)} + '\Cisco\Cisco AnyConnect Secure Mobility Client\vpncli.exe')
-vpn tool draft cmd,
-
-  "connect `"Profile Name`"`r`n `r`nexit" | & "${Env:ProgramFiles(x86)}\Cisco\Cisco AnyConnect Secure Mobility Client\vpncli.exe" -s
-
-From `COMSPEC`,
-    
-  vpncli.exe -s < anyconnect.txt
-
-The redirection case for powershell
-- [reddit](https://www.reddit.com/r/PowerShell/comments/10kz2v/input_redirection_to_executable)
-
-sound a beep after connection is verified
-
-Beep() ref,
-https://devblogs.microsoft.com/scripting/powertip-use-powershell-to-send-beep-to-console
-https://docs.microsoft.com/en-us/dotnet/api/system.console.beep?view=netframework-4.8
-
-old doc, vpn manual,
-https://docstore.mik.ua/univercd/cc/td/doc/product/vpn/client/3_6/admin_gd/vcach4.htm
 #>
 function StartProcess([string] $AppName) {
-  $VPNAppName = 'CVpn'
-
-  if ($AppName.StartsWith($VPNAppName)) {
-    $prevAppName = $AppName
-    $AppName = $VPNAppName
-  }
-
   $pathKey = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\$AppName.exe"
   # default to HKLM
   if (! (Test-Path "$pathKey")) {
@@ -194,8 +197,6 @@ function StartProcess([string] $AppName) {
       return
     }
   }
-
-  if ($AppName.StartsWith($VPNAppName)) { $AppName = $prevAppName }
 
   $BinaryPath = Get-ItemPropertyValue $pathKey -Name `(default`)
 
@@ -248,47 +249,6 @@ function StartProcess([string] $AppName) {
       InitFBEnvironment
       # $BinaryPath = $Env:LOCALAPPDATA + '\WhatsApp\WhatsApp.exe'
     }
-    'CVpn-Connect' {    # returns after restore path, no Start-Process
-      $VPNService = 'VPNAgent'
-
-      if ((Get-Service $VPNService).Status -Eq 'Running') {
-        # Gives double new lines [System.Environment]::NewLine
-        Write-Host
-        $authToken = Read-Host 'Please enter duo push for VPN Auth'
-
-        Push-Location $BinaryDir
-        # string containing escape sequence requires double quoting
-        ("connect `"Americas West`"`r`n" + $authToken + "`r`nexit") | & $BinaryPath -s
-        Pop-Location
-
-        # During WFH period, suffer the slowness of `cc-cert`
-        InitFBEnvironment
-
-        SetEnvPath($oldEnvPath)
-        Remove-Item Env:ChocolateyToolsLocation
-        [Console]::Beep(1024, 128)
-      }
-      else {
-        Write-Host -ForegroundColor Red 'Service' $VPNService 'is not running!'
-      }
-      return
-    }
-    'CVpn-Disconnect' {    # returns after restore path, no Start-Process
-      $VPNService = 'VPNAgent'
-
-      if ((Get-Service $VPNService).Status -Eq 'Running') {
-        InitFBEnvironment
-        SetEnvPath($oldEnvPath)
-        Remove-Item Env:ChocolateyToolsLocation
-
-        Push-Location $BinaryDir
-        & $BinaryPath disconnect
-        Pop-Location
-        [Console]::Beep(2048, 64)
-        'Feel free to release service ''' + $VPNService + '''!'
-      }
-      return
-    }
     default {
       'Invalid command line argument: ' + $AppName
       return
@@ -331,6 +291,6 @@ function StartProcess([string] $AppName) {
   SetEnvPath($oldEnvPath)
 }
 
-if ((RunHotCmd $AppName) -Eq $False) {
-  StartProcess $AppName
-}
+if     (RunHotCmd $AppName)  { return }
+elseif (StartProcessX $AppName) { return }
+else                         { StartProcess $AppName }

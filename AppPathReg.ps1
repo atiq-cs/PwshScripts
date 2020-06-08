@@ -2,7 +2,8 @@
 .SYNOPSIS
 Add new Application to registry
 .DESCRIPTION
-This adds `Start-Process` support for an app
+This adds `Start-Process` support for an app or to invoke the app from Run
+(Win + R) Dialog Box
 .PARAMETER AppName
 name of app to register
 .PARAMETER Path
@@ -42,8 +43,7 @@ function Main() {
     return 
   }
 
-  $lastindex = [int] $Path.lastindexof('\')
-  $PPath = $Path.Substring(0, $lastindex)
+  $PPath = [IO.Path]::GetDirectoryName($Path)
 
   # Accessing HKCR would require admin priv
   if ((Test-Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\$AppName.exe") -Or 
