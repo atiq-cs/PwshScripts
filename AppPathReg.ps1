@@ -1,9 +1,10 @@
 <#
 .SYNOPSIS
-Add new Application to registry
+Add new app or update existing app in registry
 .DESCRIPTION
 This adds `Start-Process` support for an app or to invoke the app from Run
-(Win + R) Dialog Box
+(Win + R) Dialog Box for a new app.
+For an existing app in registry, it update the location and binary path.
 .PARAMETER AppName
 name of app to register
 .PARAMETER Path
@@ -26,6 +27,12 @@ Required following Env Vars,
 `New-ItemProperty` supports LiteralPath where `New-Item` does not.
 `-LiteralPath` won't work because registry path contains space i.e., the middle part: `..\CurrentVersion\App Paths\*`
 
+Before implementing update, I used to manually remove the entry before adding
+the entry again to perform the action `update`,
+
+  # Remove before, if entry already exists
+  Remove-Item -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\$AppName.exe"
+
 ### References
 - [app-registration](https://docs.microsoft.com/en-us/windows/win32/shell/app-registration)
 - [new-itemproperty](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.management/new-itemproperty)
@@ -45,7 +52,9 @@ function Main() {
 
   $PPath = [IO.Path]::GetDirectoryName($Path)
 
-  # Accessing HKCR would require admin priv
+  # Accessing HKCR requires admin privilege
+  # if app already is registered update its binary path (key: Default)
+  #  and update its starting in path (key: Path)
   if ((Test-Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\$AppName.exe") -Or 
       (Test-Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\$AppName.exe")) {
     $CurrentRegPathVal = Get-ItemPropertyValue "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\Skype.exe" -Name `(default`)
@@ -54,6 +63,7 @@ function Main() {
       Set-ItemProperty "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\$AppName.exe" -Name 'Path' -Value "$PPath"
     }
   }
+  # else app doesn't exist: it's new app; register it
   else {
     "Registering path: " + "`"$Path`""
     New-Item -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\$AppName.exe"
