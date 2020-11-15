@@ -214,6 +214,7 @@ function StartProcess([string] $AppName) {
       # Later, retrieve these values from a dictionary
       $AppName = 'VSCode'
       Init-App git
+      Init-App dotnet
       AddToEnvPath($PFilesX64Dir + '\VSCode\bin')
       # Being in home dir location is not required
       $RedirectStandardOutVal = $PwshScriptDir + '\log\' + $AppName + '_out.log'

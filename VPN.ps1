@@ -17,6 +17,8 @@ Disconnect example,
   VPN.ps1 disconnect
 
 .NOTES
+Added support for forced disconnect in case it helps when shell is hang and it won't connect anymore. This needs to be tested.
+
 Before running this script ensure Service 'VPNAgent' Running. Usually it's
 installed by default with CPE deployment of cisco anyconnect on client
 machines.
@@ -40,7 +42,8 @@ From `COMSPEC`,
 
 [CmdletBinding()] Param (
   [ValidateSet('connect', 'disconnect')]
-  [Parameter(Mandatory=$true)] [string] $Action
+  [Parameter(Mandatory=$true)] [string] $Action,
+  [bool] $Force=$False
 )
 
 <#
@@ -112,7 +115,8 @@ function VPN() {
       $VPNService = 'VPNAgent'
 
       if ((Get-Service $VPNService).Status -Eq 'Running') {
-        if (! (Test-Connection $corpNetNode -Count 1 -ErrorAction SilentlyContinue)) {
+        # Is there much use case of this `Force` flag
+        if (!$Force -And ! (Test-Connection $corpNetNode -Count 1 -ErrorAction SilentlyContinue)) {
           'VPN client is disconnected.'
           return
         }
