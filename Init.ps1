@@ -77,14 +77,14 @@ Refs,
 #>
 
 function Main() {
-  # get dot core latest version
-  $netCmd = $PFilesX64Dir + '\dotnet\dotnet'
-  $index = ((& $netCmd --list-sdks).Count -1)
-  $netCoreVersion = (& $netCmd --list-sdks)[$index]
-
-  'Core ' + [string] $PSVersionTable.PSVersion + ' on ' + [string] $PSVersionTable.OS + ', powered by net core sdk ' + $netCoreVersion + '
-'
+  
   .\Init-App resetEnvPath
+  Init-App git-cmd
+  Init-App dotnet
+
+  'Powershell Core ' + [string] $PSVersionTable.PSVersion + ' on ' + [string] $PSVersionTable.OS
+  Write-Host ' '
+
   InitConsoleUI
   UpdateCoreRepo
   # StartCustomPrcoesses

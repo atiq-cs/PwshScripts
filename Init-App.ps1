@@ -25,7 +25,7 @@ Required following Env Vars,
 #>
 
 [CmdletBinding()] Param (
-  [ValidateSet('admin', 'resetEnvPath', 'choco', 'dotnet', 'git', 'fb-tools', 'pwsh', 'python')] [string] $AppName = 'resetEnvPath')
+  [ValidateSet('admin', 'resetEnvPath', 'choco', 'dotnet', 'git-cmd', 'git', 'fb-tools', 'pwsh', 'openssh', 'python')] [string] $AppName = 'resetEnvPath')
 
 function AddToEnvPath([string] $path = ';') {
   if (! (Test-Path $path)) {
@@ -34,6 +34,16 @@ function AddToEnvPath([string] $path = ';') {
   }
   if ($Env:Path.Contains($path) -Eq $False) {
     $Env:Path += ';' + $path
+  }
+}
+
+function RemoveFromEnvPath([string] $path = '') {
+  if (! (Test-Path $path)) {
+    Write-Host "Not valid path: $path"
+    return
+  }
+  if ($Env:Path.Contains($path)) {
+    $Env:Path = $Env:Path.Replace("$path;", "")
   }
 }
 
@@ -59,13 +69,26 @@ function InitVariables([string] $InitType = 'resetEnvPath') {
   switch( $InitType ) {
     'admin' {
       (Get-Host).UI.RawUI.WindowTitle = "root @ FB Terminal"
+      # choco
       InitVariables 'choco'
+      $SourceList = choco sources list
+      if (! $SourceList[1].Contains('chocolatey')) {
+        Write-Host 'choco first entry is different, have a look!'
+        return
+      }
+      if ($SourceList[1].Contains('[Disabled]')) {
+        # choco source add -n=chocolatey -s="https://chocolatey.org/api/v2/"
+        choco source enable -n=chocolatey
+        # choco source remove -n cpe_client
+        # choco source remove -n wfh
+        choco source disable -n=cpe_client
+        choco source disable -n=wfh
+        choco sources list
+        return
+      }
       return
     }
     'choco' {
-      # choco sources list
-      # choco source add -n=chocolatey -s="https://chocolatey.org/api/v2/"
-      # choco source remove -n cpe_client
       $Env:ChocolateyInstall = 'D:\PFiles_x64\Chocolatey'
       $Env:ChocolateyToolsLocation = $Env:ChocolateyInstall +'\tools'
       AddToEnvPath( $Env:ChocolateyInstall + '\bin' )
@@ -93,25 +116,66 @@ function InitVariables([string] $InitType = 'resetEnvPath') {
         New-Item -ItemType Directory $Env:DOTNET_ROOT
       }
       AddToEnvPath( $Env:DOTNET_ROOT )
+      # print net core version
+      $index = (dotnet --list-sdks).Count -1
+      $netCoreVersion = (dotnet --list-sdks)[$index]
+      'net core sdk: ' + $netCoreVersion
       return
     }
     'fb-tools' {  # required to utilize tooling
-      InitVariables choco
+      (Get-Host).UI.RawUI.WindowTitle = "root @ FB Terminal with fb-tools"
+
+      # choco fbit
+      InitVariables 'choco'
+
       # CPE\lib to PSModulePath, firt line is FB only
       $CPEPath = 'C:\WINDOWS\CPE\lib\powershell'
       if ($Env:PSModulePath.Contains($CPEPath) -Eq $False) { $Env:PSModulePath += ';' + $CPEPath }
 
+      # ruby
+      AddToEnvPath('C:\opscode\chef\embedded\bin')
       # ssh support for VSCode
       AddToEnvPath($Env:ChocolateyToolsLocation + '\fb.gitbash\usr\bin')
+
+      $SourceList = choco sources list
+
+      if (! $SourceList[3].Contains('cpe_client')) {
+        Write-Host 'choco first entry is different, have a look!'
+        return
+      }
+
+      if ($SourceList[3].Contains('[Disabled]')) {
+        # choco source add -n=wfh -s="C:\chef\solo\confectioner\latest"
+        # choco source add -n=cpe_client -s="https://confectioner.thefacebook.com/"
+        choco source enable -n=cpe_client
+        choco source enable -n=wfh
+        # choco source remove -n chocolatey
+        choco source disable -n=chocolatey
+        choco sources list
+        return
+      }
+      return
+    }
+    'git-cmd' {
+      AddToEnvPath( $PFilesX64Dir + '\git\cmd' )
       return
     }
     # planned deprecation by 'Git Util' net core app
     'git' {
-      AddToEnvPath( $PFilesX64Dir + '\git\cmd' )
+      # remove git-cmd from path
+      RemoveFromEnvPath( $PFilesX64Dir + '\git\cmd' )
+      AddToEnvPath( $PFilesX64Dir + '\git\bin' )
       return
     }
     'pwsh' {
       AddToEnvPath $PwshScriptDir
+      return
+    }
+    'openssh' {
+      (Get-Host).UI.RawUI.WindowTitle = "fb devserver"
+
+      AddToEnvPath $PwshScriptDir
+      AddToEnvPath( $Env:SystemRoot + '\System32\OpenSSH' )
       return
     }
     'python' {

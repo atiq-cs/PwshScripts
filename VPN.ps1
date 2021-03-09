@@ -17,7 +17,10 @@ Disconnect example,
   VPN.ps1 disconnect
 
 .NOTES
-Added support for forced disconnect in case it helps when shell is hang and it won't connect anymore. This needs to be tested.
+Putty Reg abstraction temporarily allows us to open source it. In future replace that with some
+config (containing URLs)
+Added support for forced disconnect in case it helps when shell is hang and it won't connect
+anymore. This needs to be tested.
 
 Before running this script ensure Service 'VPNAgent' Running. Usually it's
 installed by default with CPE deployment of cisco anyconnect on client

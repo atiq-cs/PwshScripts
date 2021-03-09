@@ -52,7 +52,7 @@ Reference on how to use these path vars,
   [bool] $SkipCCCert = $False
 )
 
- # copied from Init-App
+# copied from Init-App
 function AddToEnvPath([string] $path = ';') {
   if (! (Test-Path $path)) {
     Write-Host "Not valid path: $path"
@@ -77,7 +77,9 @@ function InitFBEnvironment([string] $authToken = '') {
   }
 
   Write-Host -NoNewline 'Waiting for status from cc-certs..'
-  $elapsedTimeMS = (Measure-Command { $authStatus = (& $CCCertsExe -cert_expirations -cert_list ssh-user | ConvertFrom-Json).'ssh-user' }).TotalMilliseconds
+  $authStatus = 'expired'
+  $elapsedTimeMS = (Measure-Command { $authStatus = (& $CCCertsExe -cert_expirations -cert_list `
+    ssh-user | ConvertFrom-Json).'ssh-user' }).TotalMilliseconds
   
   if ($authStatus -Eq 'expired') {
     Write-Host -ForegroundColor Red ' Authentication token expired!'
@@ -109,6 +111,16 @@ function RunHotCmd([string] $AppName) {
     'pwsh' { # elevated
       Push-Location $PwshScriptDir
       Start-Process pwsh -ArgumentList '-NoExit', '-NoLogo', 'Init-App.ps1 admin' -Verb Runas -ErrorAction 'stop'
+      Pop-Location
+    }
+    'fbit-admin' { # elevated
+      Push-Location $PwshScriptDir
+      Start-Process pwsh -ArgumentList '-NoExit', '-NoLogo', 'Init-App.ps1 fb-tools' -Verb Runas -ErrorAction 'stop'
+      Pop-Location
+    }
+    'ssh' {
+      Push-Location $PwshScriptDir
+      Start-Process powershell -ArgumentList '-NoExit', '-NoLogo', 'Init-App.ps1 openssh' -ErrorAction 'stop'
       Pop-Location
     }
     default {
@@ -213,7 +225,8 @@ function StartProcess([string] $AppName) {
     'Code' {    # verbose, non-fb, stdout only
       # Later, retrieve these values from a dictionary
       $AppName = 'VSCode'
-      Init-App git
+      # not required: set in json settings file instead
+      # Init-App git
       Init-App dotnet
       AddToEnvPath($PFilesX64Dir + '\VSCode\bin')
       # Being in home dir location is not required
@@ -244,6 +257,9 @@ function StartProcess([string] $AppName) {
       InitFBEnvironment
 
       # Being in home dir location is not required
+      $RedirectStandardOutVal = $PwshScriptDir + '\log\' + $AppName + '_out.log'
+    }
+    'Signal' {    # non-verbose, non-fb
       $RedirectStandardOutVal = $PwshScriptDir + '\log\' + $AppName + '_out.log'
     }
     'WhatsApp' {    # non-verbose, fb
@@ -292,6 +308,6 @@ function StartProcess([string] $AppName) {
   SetEnvPath($oldEnvPath)
 }
 
-if     (RunHotCmd $AppName)  { return }
+if     (RunHotCmd $AppName)     { return }
 elseif (StartProcessX $AppName) { return }
-else                         { StartProcess $AppName }
+else                            { StartProcess $AppName }
