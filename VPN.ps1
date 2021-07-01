@@ -37,6 +37,9 @@ From `COMSPEC`,
 
   vpncli.exe -s < anyconnect.txt
 
+debug,
+  .\vpncli connect "Americas West"
+
 ### Ref
 - The redirection case for powershell: [reddit](https://www.reddit.com/r/PowerShell/comments/10kz2v/input_redirection_to_executable)
 - old doc, [vpn manual at mik.ua](https://docstore.mik.ua/univercd/cc/td/doc/product/vpn/client/3_6/admin_gd/vcach4.htm)

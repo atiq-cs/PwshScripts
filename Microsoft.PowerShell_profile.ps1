@@ -52,8 +52,8 @@ function Get-DirAlias([string] $location = $(Get-Location)) {
 
 # Set prompt
 function prompt {
-    return "[atiq@" + $(If ($PHOST_TYPE -eq 'office') { 'fb' } Else {
-      $PHOST_TYPE }) + " $(Get-DirAlias)]$ "
+  return "[$($Home.SubString($Home.LastIndexOf('\')+1))@" + $(If ($PHOST_TYPE `
+    -eq 'office') { 'fb' } Else { $PHOST_TYPE }) + " $(Get-DirAlias)]$ "
 }
 
 # Commands to set up new shell

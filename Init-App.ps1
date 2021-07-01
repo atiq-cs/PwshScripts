@@ -38,10 +38,16 @@ function AddToEnvPath([string] $path = ';') {
 }
 
 function RemoveFromEnvPath([string] $path = '') {
+  if (-not [string]::IsNullOrEmpty($path)) {
+    Write-Host "Empty string: $path"
+    return
+  }
+
   if (! (Test-Path $path)) {
     Write-Host "Not valid path: $path"
     return
   }
+
   if ($Env:Path.Contains($path)) {
     $Env:Path = $Env:Path.Replace("$path;", "")
   }
@@ -119,7 +125,8 @@ function InitVariables([string] $InitType = 'resetEnvPath') {
       # print net core version
       $index = (dotnet --list-sdks).Count -1
       $netCoreVersion = (dotnet --list-sdks)[$index]
-      'net core sdk: ' + $netCoreVersion
+      # split to remove install location from output
+      'net core sdk: ' + ($netCoreVersion -split '\[')[0]
       return
     }
     'fb-tools' {  # required to utilize tooling
@@ -173,13 +180,12 @@ function InitVariables([string] $InitType = 'resetEnvPath') {
     }
     'openssh' {
       (Get-Host).UI.RawUI.WindowTitle = "fb devserver"
-
-      AddToEnvPath $PwshScriptDir
-      AddToEnvPath( $Env:SystemRoot + '\System32\OpenSSH' )
+      AddToEnvPath( $PFilesX64Dir + '\ssh' )
       return
     }
     'python' {
-      AddToEnvPath( $PFilesX64Dir + '\python3;' + $PFilesX64Dir + '\python3\Scripts' )
+      AddToEnvPath( $PFilesX64Dir + '\python3' )
+      AddToEnvPath( $PFilesX64Dir + '\python3\Scripts' )
       return
     }
     'build' {
