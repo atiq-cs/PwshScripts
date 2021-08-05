@@ -2,6 +2,7 @@
 .SYNOPSIS
 Connect to ssh server using putty
 .DESCRIPTION
+Deprecated by ssh windows
 This adds `Start-Process` support for an app
 .PARAMETER AppName
 name of app to register

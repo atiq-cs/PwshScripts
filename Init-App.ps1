@@ -78,9 +78,15 @@ function InitVariables([string] $InitType = 'resetEnvPath') {
       # choco
       InitVariables 'choco'
       $SourceList = choco sources list
-      if (! $SourceList[1].Contains('chocolatey')) {
-        Write-Host 'choco first entry is different, have a look!'
-        return
+      # previous, see if we still need this after running `Cleanup-FBIT`
+      # if (! $SourceList[1].Contains('chocolatey')) {
+      #   Write-Host 'choco first entry is different, have a look!'
+      #   return
+      # }
+
+      if ($SourceList.Length -lt 4 -Or ! $SourceList[1].Contains('chocolatey')) {
+        Write-Host 'choco first entry is different, have a look! auto fixing..'
+        choco source add -n=chocolatey -s="https://chocolatey.org/api/v2/"
       }
       if ($SourceList[1].Contains('[Disabled]')) {
         # choco source add -n=chocolatey -s="https://chocolatey.org/api/v2/"
@@ -127,6 +133,15 @@ function InitVariables([string] $InitType = 'resetEnvPath') {
       $netCoreVersion = (dotnet --list-sdks)[$index]
       # split to remove install location from output
       'net core sdk: ' + ($netCoreVersion -split '\[')[0]
+
+      # add .net core global location for current user
+      $DOTNET_USER_GLOBAL = $Env:USERPROFILE + '\.dotnet\tools'
+      if (Test-Path $DOTNET_USER_GLOBAL) {
+        AddToEnvPath( $DOTNET_USER_GLOBAL )
+      } else {
+        'net core user global path not found'
+      }
+
       return
     }
     'fb-tools' {  # required to utilize tooling

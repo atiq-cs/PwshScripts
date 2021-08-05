@@ -12,6 +12,10 @@
     too many params to pass otherwise..
 
     facilitate proper checkout with GitUtil
+
+    Demonstrates,
+    - switch syntax
+    - case insensitive string comparison: [System.StringComparison]
 .Parameter ProfileName
     Select among available profiles
 .Parameter CredUserNames
