@@ -61,6 +61,8 @@ function Main() {
                 throw [ArgumentException] ('Unexpected number of gUser Names!')
             }
             git config credential.username $CredUserNames[0]
+            # ref, repo: atiq-cs/note
+            $Env:GITHUB_TOKEN = '622c74c4d9106bda9a750c983343407ee4d4abe1'
             Break
         }
         "MM" {
@@ -80,6 +82,8 @@ function Main() {
                 throw [ArgumentException] ('Unexpected number of gUser Names!')
             }
             git config credential.username $CredUserNames[1]
+            # ref, repo: think-mm/blog
+            $Env:GITHUB_TOKEN = '4770a857cb1482da0e8af7c39a06de4ccf001eeb'
             Break
         }
         Default { "Unexpected $ProfileName!" }
