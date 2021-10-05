@@ -37,7 +37,8 @@ function Main() {
         "Administrator")) {
       $arguments = "Start-Service", $WirelessService
       Start-Process powershell -Verb runAs -ArgumentList $arguments
-      mdelay.ps1 0 'Please adjust audio level/volume for the headphone.'
+      # works as long as bin is seperate (not in path)
+      Delay 0 'Please adjust audio level/volume for the headphone.'
       Start-Sleep 1
     }
     else {
