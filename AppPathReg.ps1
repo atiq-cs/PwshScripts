@@ -1,21 +1,24 @@
 <#
 .SYNOPSIS
-Add new app or update existing app in registry
+  Add new app or update existing app in registry
 .DESCRIPTION
-This adds `Start-Process` support for an app or to invoke the app from Run
-(Win + R) Dialog Box for a new app.
-For an existing app in registry, it update the location and binary path.
-When duplicate entry exists in HKLM it supports removing it.
-Remove (an action on HKLM) requires admin privilege. Hence, that user role is checked.
+  This adds `Start-Process` support for an app or to invoke the app from Run
+  (Win + R) Dialog Box for a new app.
+  For an existing app in registry, it update the location and binary path.
+  When duplicate entry exists in HKLM it supports removing it.
+  Remove (an action on HKLM) requires admin privilege. Hence, that user role is checked.
 
-Consumer: StartX script
+  Consumer: StartX script
+
 .PARAMETER Action
-update: add or update
-remove: remove
+  update: add or update
+  remove: remove
+
 .PARAMETER AppName
-name of app to register
+  name of app to register
 .PARAMETER Path
-actual binary path
+  actual binary path
+
 .EXAMPLE
 AppPathReg Update Signal "$PFilesX64Dir\signal\Signal.exe"
 AppPathReg Chrome "$Env:ProgramFiles\Google\Chrome\Application\Chrome.exe"

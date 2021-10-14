@@ -12,11 +12,10 @@ ToDo: later, may be, update this with a C# implementation along with a binary
 .PARAMETER Time
 how long to delay
 .EXAMPLE
- $ mdelay.ps1 2 "hello world"
+ $ mdelay.ps1 2 "task completed"
  $ mdelay.ps1 5
 
 .NOTES
-Utilized by Bluetooth.ps1
 #>
 
 [CmdletBinding()] Param (

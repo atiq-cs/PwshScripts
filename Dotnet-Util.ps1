@@ -13,6 +13,8 @@
   Dotnet-Util.ps1 Update-Packages -PreRelease
 
 .NOTES
+demos following,
+- regex expression match
 
 tag: cross-platform
 #>
@@ -27,22 +29,22 @@ function Main() {
   # ('Value of action ' + $Action)
 
   # one liner if else example
-  'Updating packages to ' + (&{ if ($PreRelease) {'stable'} else {'pre-release'} })
+  'Updating packages to ' + $( if ($PreRelease) {'pre-release'} else {'stable'} )
 
 
   $regex = 'PackageReference Include="([^"]*)" Version="([^"]*)"'
 
-  ForEach ($file in get-childitem . -recurse | Where-Object {$_.extension -like "*proj"}) {
+  ForEach ($file in Get-ChildItem . -recurse | Where-Object {$_.extension -like "*proj"}) {
       $packages = Get-Content $file.FullName |
-          select-string -pattern $regex -AllMatches | 
+          Select-String -pattern $regex -AllMatches | 
           ForEach-Object {$_.Matches} | 
-          ForEach-Object {$_.Groups[1].Value.ToString()}| 
+          ForEach-Object {$_.Groups[1].Value.ToString()} |
           Sort-Object -Unique
 
       ForEach ($package in $packages) {
-          write-host "Update $file package :$package"  -foreground 'magenta'
+          Write-Host "Update $file package :$package"  -foreground 'magenta'
           $fullName = $file.FullName
-          Invoke-Expression ("dotnet add $fullName package $package" + (&{ if ($PreRelease) {' --prerelease'} }))
+          Invoke-Expression ("dotnet add $fullName package $package" + $( if ($PreRelease) {' --prerelease'} ))
       }
   }
 }

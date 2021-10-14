@@ -37,8 +37,9 @@ function Main() {
         "Administrator")) {
       $arguments = "Start-Service", $WirelessService
       Start-Process powershell -Verb runAs -ArgumentList $arguments
-      # works as long as bin is seperate (not in path)
-      Delay 0 'Please adjust audio level/volume for the headphone.'
+      # Delay is a PS Script
+      # Delay 0 'Please adjust audio level/volume for the headphone.'
+      'Please adjust audio level/volume for the headphone.'
       Start-Sleep 1
     }
     else {
@@ -59,12 +60,16 @@ function Main() {
   }
 
   [Windows.Devices.Radios.Radio,Windows.System.Devices,ContentType=WindowsRuntime] | Out-Null
-  [Windows.Devices.Radios.RadioAccessStatus,Windows.System.Devices,ContentType=WindowsRuntime] | Out-Null
-  Await ([Windows.Devices.Radios.Radio]::RequestAccessAsync()) ([Windows.Devices.Radios.RadioAccessStatus]) | Out-Null
-  $radios = Await ([Windows.Devices.Radios.Radio]::GetRadiosAsync()) ([System.Collections.Generic.IReadOnlyList[Windows.Devices.Radios.Radio]])
+  [Windows.Devices.Radios.RadioAccessStatus,Windows.System.Devices,ContentType=WindowsRuntime] |
+    Out-Null
+  Await ([Windows.Devices.Radios.Radio]::RequestAccessAsync()) (`
+    [Windows.Devices.Radios.RadioAccessStatus]) | Out-Null
+  $radios = Await ([Windows.Devices.Radios.Radio]::GetRadiosAsync()) ([`
+    System.Collections.Generic.IReadOnlyList[Windows.Devices.Radios.Radio]])
   $bluetooth = $radios | Where-Object { $_.Kind -eq 'Bluetooth' }
   [Windows.Devices.Radios.RadioState,Windows.System.Devices,ContentType=WindowsRuntime] | Out-Null
-  Await ($bluetooth.SetStateAsync($NewStatus)) ([Windows.Devices.Radios.RadioAccessStatus]) | Out-Null
+  Await ($bluetooth.SetStateAsync($NewStatus)) ([Windows.Devices.Radios.RadioAccessStatus]) |
+    Out-Null
 
   If ($NewStatus -eq 'Off' -and (Get-Service $WirelessService).Status -eq 'Running') {
     # ref for runas: https://stackoverflow.com/questions/7690994/powershell-running-a-command-as-administrator

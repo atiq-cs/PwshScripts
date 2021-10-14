@@ -16,6 +16,7 @@
     Demonstrates,
     - switch syntax
     - case insensitive string comparison: [System.StringComparison]
+
 .Parameter ProfileName
     Select among available profiles
 .Parameter CredUserNames

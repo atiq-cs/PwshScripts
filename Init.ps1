@@ -9,7 +9,6 @@ Minimal Initialization Script for Powershell Core Environment
 
 .NOTES
 Verify defined vars in $PROFILE
-Add support for arg ' ML' to `Init-App` script
 
 Defaulting to old way: change color from property for color initialization, using RGB Color:
   {1, 32, 72}
@@ -25,7 +24,11 @@ Deps,
 
 # Currently only updates fftsys repository using git
 function UpdateCoreRepo() {
-  bin\GitUtil --repo-path $PWD.Path --action pullMaster
+  $GitUtilPath = 'D:\git_ws\GitUtil'
+  Push-Location $GitUtilPath
+  # $PWD.Path gives current path
+  dotnet run -- --repo-path $PwshScriptDir --action pullMaster
+  Pop-Location
   # git pull origin master
   Write-Host "GitUtil: Code updated silently, otherwise expect exception from core framework"
 }
@@ -47,14 +50,18 @@ function ShowHelp() {
   Write-Host '
 Startx Apps,
 - Chrome
-- CodeFB
 - Code
-- CVpn-Connect and Disconnect
-- DevEnv
+- Vpn connect and disconnect
+- fbit-admin
 - KeePass
-- Messenger
 - Notepad++
+- pwsh
 - Sgdm (DiffMerge)
+- WinMerge
+-- Deprecated or Unused --
+- DevEnv
+- CodeFB
+- Messenger
 - WhatsApp
 - Workchat
 '
@@ -77,12 +84,11 @@ Refs,
 #>
 
 function Main() {
-  
   .\Init-App resetEnvPath
   Init-App git-cmd
   Init-App dotnet
 
-  'Powershell Core ' + [string] $PSVersionTable.PSVersion + ' on ' + [string] $PSVersionTable.OS
+  'pwsh ' + [string] $PSVersionTable.PSVersion + ' on ' + [string] $PSVersionTable.OS
   Write-Host ' '
 
   InitConsoleUI
