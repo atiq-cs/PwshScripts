@@ -18,7 +18,7 @@ Not used right now, but, in trouble, can also look at,
 
 tag: windows-only
 #>
-  
+
 [CmdletBinding()] Param (
   [Parameter(Mandatory=$true)] [ValidateSet('Off', 'On')] [string] $NewStatus)
 

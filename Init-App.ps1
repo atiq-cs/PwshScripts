@@ -25,7 +25,8 @@ Required following Env Vars,
 #>
 
 [CmdletBinding()] Param (
-  [ValidateSet('admin', 'resetEnvPath', 'choco', 'dotnet', 'git-cmd', 'git', 'fb-tools', 'pwsh', 'openssh', 'python')] [string] $AppName = 'resetEnvPath')
+  [ValidateSet('admin', 'resetEnvPath', 'choco', 'dotnet', 'git-cmd', 'git', 'fb-tools', 'node',
+  'pwsh', 'openssh', 'python')] [string] $AppName = 'resetEnvPath')
 
 function AddToEnvPath([string] $path = ';') {
   if (! (Test-Path $path)) {
@@ -189,18 +190,29 @@ function InitVariables([string] $InitType = 'resetEnvPath') {
       AddToEnvPath( $PFilesX64Dir + '\git\bin' )
       return
     }
+    'node' {
+      AddToEnvPath( $PFilesX64Dir + '\Node' )
+      AddToEnvPath( $Env:APPDATA + '\npm' )
+
+      Push-Location D:\Code\TS
+      return
+    }
     'pwsh' {
       AddToEnvPath $PwshScriptDir
       return
     }
     'openssh' {
-      (Get-Host).UI.RawUI.WindowTitle = "fb devserver"
+      (Get-Host).UI.RawUI.WindowTitle = "SSH Terminal"
       AddToEnvPath( $PFilesX64Dir + '\ssh' )
       return
     }
     'python' {
       AddToEnvPath( $PFilesX64Dir + '\python3' )
       AddToEnvPath( $PFilesX64Dir + '\python3\Scripts' )
+
+      Push-Location D:\Code\ML
+      python -m venv env
+      env\Scripts\Activate.ps1
       return
     }
     'build' {

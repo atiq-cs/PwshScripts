@@ -1,27 +1,30 @@
 <#
 .SYNOPSIS
-A powerscript to generate Problem solving source code template
+  A powerscript to generate Problem solving source code template
 .DESCRIPTION
-It's tedius to copy source file everytime and update info. Instead use a script to automate this.
-The template adhere to coding convention used in https://github.com/atiq-cs/Problem-Solving
-name situations for leetcode probably can be generated.
-ToDo:
-- Add validation for template type i.e, not leetcode, codeforces etc.
+  It's tedius to copy source file everytime and update info. Instead use a script to automate this.
+  The template adhere to coding convention used in https://github.com/atiq-cs/Problem-Solving
+  name situations for leetcode probably can be generated.
+  ToDo:
+  - Make independent .Net App to accomplish this
+  - Add validation for template type i.e, not leetcode, codeforces etc.
+
 .PARAMETER Template
-What kind of template do we want to generate, or which online judge we are targetting.
+  What kind of template do we want to generate, or which online judge we are targetting.
 .PARAMETER Title
-Problem Title or Name: mandatory for codeforces to construct output file name
+  Problem Title or Name: mandatory for codeforces to construct output file name
 .PARAMETER Number
 The problem number
 - leetcode: used to construct file name only
 - codeforces: used to construct file name and URL both
 .PARAMETER URL
-Represents part of the URL (problem name) from a leetcod problem. Should be present for leetcode.
-ToDo: replace this with name construction from provided Name (Title)..
-ToDo: accept leetcode URL
-* probably it's intuitive just to extract info as much as possible from 
-This URL part is optional for codeforces problems. However, it will be used to construct file name
-if provided.
+  Represents part of the URL (problem name) from a leetcod problem. Should be present for leetcode.
+  ToDo: replace this with name construction from provided Name (Title)..
+  ToDo: accept leetcode URL
+  * probably it's intuitive just to extract info as much as possible from 
+  This URL part is optional for codeforces problems. However, it will be used to construct file name
+  if provided.
+
 .PARAMETER Occasion
 Won't be added to template if no provied. Usually to specify a contest or an event attended
 related to the problem.
@@ -291,7 +294,7 @@ function Main() {
         'Invalid source file path provided!'
         return
       }
-      start devenv /Edit, $Path
+      Start-Process devenv /Edit, $Path
     }
     'tempLintCmd' {
       # temporary abusing `OutDirPath`
@@ -312,7 +315,7 @@ function Main() {
       }
       $gitLintPath = 'general-solving\lintcode\' + $Path.TrimStart('0')
       git log -- $gitLintPath
-      start devenv /Edit, $lintPath
+      Start-Process devenv /Edit, $lintPath
     }
     default {
       'Unknown command line argument: ' + $Command + ' provided!'
