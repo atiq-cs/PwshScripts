@@ -2,20 +2,19 @@
 
 <#
 .SYNOPSIS
-Perform specified delay
+  Perform specified delay
 .DESCRIPTION
-Perform delay
-Display timer
-Show Notification
-ToDo: later, may be, update this with a C# implementation along with a binary
+  Call Delay Binary to Display timer and perform the delay
+  Show a balloon notification on System Tray after specified time elapses
+  ToDo: later, may be, update this with a C# implementation along with a binary
 
 .PARAMETER Time
-how long to delay
+  how long to delay
 .EXAMPLE
- $ mdelay.ps1 2 "task completed"
- $ mdelay.ps1 5
+  mdelay.ps1 2 "task completed"
+  mdelay.ps1 5
 
-.NOTES
+tag: windows-only
 #>
 
 [CmdletBinding()] Param (
@@ -28,6 +27,8 @@ how long to delay
 .SYNOPSIS
   Main function
 .DESCRIPTION
+  Check previous commentary (top)
+.NOTES
   References
   - https://technet.microsoft.com/en-us/library/ff730952.aspx
   Icon,

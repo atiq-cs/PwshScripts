@@ -56,5 +56,5 @@ function prompt {
     -eq 'office') { 'fb' } Else { $PHOST_TYPE }) + " $(Get-DirAlias)]$ "
 }
 
-# Commands to set up new shell
-Push-Location $PwshScriptDir
+# Set Current Working Dir
+Set-Location $PwshScriptDir

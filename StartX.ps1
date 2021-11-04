@@ -80,7 +80,7 @@ function InitFBEnvironment([string] $authToken = '') {
   $authStatus = 'expired'
   $elapsedTimeMS = (Measure-Command { $authStatus = (& $CCCertsExe -cert_expirations -cert_list `
     ssh-user | ConvertFrom-Json).'ssh-user' }).TotalMilliseconds
-  
+
   if ($authStatus -Eq 'expired') {
     Write-Host -ForegroundColor Red ' Authentication token expired!'
 

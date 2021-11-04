@@ -1,20 +1,24 @@
 <#
 .SYNOPSIS
-Automate actions for turning on/off bluetooth
+  Automate actions for turning bluetooth on/off
 .DESCRIPTION
-Control bluetooth radio device
+  Control bluetooth radio device
 .PARAMETER Status
-Desired state of Bluetooth
+  Desired state of Bluetooth
 .EXAMPLE
-  -Status Off
-  -Status On
+ On legacy powersehll,
+  Bluetooth.ps1 Off
+  Bluetooth.ps1 On
+
+ On powershell 7 (or the core versions),
+  Powershell -NoProfile -File ($PwshScriptDir + '\Bluetooth.ps1') On
 
 .NOTES
-Turn on/off Bluetooth radio/adapter from cmd/powershell in Windows 10
- https://superuser.com/q/1168551/
-
-Not used right now, but, in trouble, can also look at,
- http://www.thewindowsclub.com/disable-bluetooth-windows-10
+**REFS**
+ - Turn on/off Bluetooth radio/adapter from cmd/powershell in Windows 10
+  https://superuser.com/q/1168551/
+ - Not used right now, but, in trouble, can also look at,
+  http://www.thewindowsclub.com/disable-bluetooth-windows-10
 
 tag: windows-only
 #>
@@ -72,7 +76,8 @@ function Main() {
     Out-Null
 
   If ($NewStatus -eq 'Off' -and (Get-Service $WirelessService).Status -eq 'Running') {
-    # ref for runas: https://stackoverflow.com/questions/7690994/powershell-running-a-command-as-administrator
+    # ref for runas
+    # https://stackoverflow.com/questions/7690994/powershell-running-a-command-as-administrator
 	  If (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::`
       GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] `
         "Administrator")) {

@@ -105,6 +105,12 @@ function InitVariables([string] $InitType = 'resetEnvPath') {
       $Env:ChocolateyInstall = 'D:\PFiles_x64\Chocolatey'
       $Env:ChocolateyToolsLocation = $Env:ChocolateyInstall +'\tools'
       AddToEnvPath( $Env:ChocolateyInstall + '\bin' )
+
+      # Chocolatey profile
+      $ChocolateyProfile = "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
+      if (Test-Path($ChocolateyProfile)) {
+        Import-Module "$ChocolateyProfile"
+      }
       return
     }
     # restore path to default

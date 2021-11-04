@@ -6,3 +6,7 @@ bin/
 
 # logs for tools, utilities scripts and binaries
 log/
+
+# Visual Studio 2015/2017 cache/options directory
+.vs/
+.vscode/
