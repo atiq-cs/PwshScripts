@@ -18,7 +18,7 @@ tag: windows-only
 #>
 
 [CmdletBinding()] Param (
-  [Parameter(Mandatory=$true)] [int] $Time,
+  [Parameter(Mandatory=$true)] [string] $Time,
   [string] $Msg,
   [string] $PwshScriptDir = 'D:\pwsh-scripts')
 

@@ -1,10 +1,10 @@
 <#
 .SYNOPSIS
-  Minimal Initialization Script for Powershell Core Environment
+  Minimal Initialization Script for Powershell 7 Environment
 .DESCRIPTION
  
 .EXAMPLE
- pwsh -NoExit -NoLogo -File D:\pwsh-scripts\Init.ps1
+  pwsh -NoExit -NoLogo -File D:\pwsh-scripts\Init.ps1
 
 .NOTES
   Verify defined vars in $PROFILE
@@ -12,7 +12,7 @@
   Defaulting to old way: change color from property for color initialization, using RGB Color:
     {1, 32, 72}
 
-  Run only first time,
+  Run only for choco init / admin,
   Set $Env:ChocolateyInstall, ChocolateyToolsLocation
 
   Deps,
@@ -54,6 +54,7 @@ Startx Apps,
 - pwsh
 - Sgdm (DiffMerge)
 - WinMerge
+
 -- Deprecated or Unused --
 - DevEnv
 - CodeFB
@@ -65,23 +66,24 @@ Startx Apps,
 
 <#
 .SYNOPSIS
-The Main Method that calls initialization components
+  The Main Method that calls initialization components
 .DESCRIPTION
-Modify Env Path
+  Modify Env Path
 
-Adding 'C:\Tools' Usually not required: do a cc-certs renewal based on expiration value and the
-dialog box for init won't appear to bother us again! Tools is deprecated by ChocolateyToolsLocation
+  Adding 'C:\Tools' Usually not required: do a cc-certs renewal based on expiration value and the
+  dialog box for init won't appear to bother us again! Tools is deprecated by
+  ChocolateyToolsLocation
 
 .EXAMPLE
-.\Init
+  .\Init
 .NOTES
-Refs,
-- https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet
+  Refs,
+  - https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet
 #>
 
 function Main() {
   .\Init-App resetEnvPath
-  Init-App git-cmd
+  # Init-App git-cmd
   Init-App dotnet
 
   'pwsh ' + [string] $PSVersionTable.PSVersion + ' on ' + [string] $PSVersionTable.OS
@@ -89,7 +91,6 @@ function Main() {
 
   InitConsoleUI
   UpdateRepo
-  # StartCustomPrcoesses
 
   ShowHelp
 }
