@@ -228,6 +228,7 @@ function StartProcess([string] $AppName) {
       # not required: set in json settings file instead
       # Init-App git
       Init-App dotnet
+      Init-App git-cmd
       AddToEnvPath($PFilesX64Dir + '\VSCode\bin')
       # Being in home dir location is not required
       $RedirectStandardOutVal = $PwshScriptDir + '\log\' + $AppName + '_out.log'

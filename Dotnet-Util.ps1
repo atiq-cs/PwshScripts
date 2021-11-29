@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  Dotnet CLI helper utility
+  Dotnet CLI Helper Utility
 .DESCRIPTION
   Update nuget packages
   Supports pre-release (alpha/beta) versions
@@ -15,26 +15,24 @@
 .NOTES
 demos following,
 - regex expression match
+- new switch syntax
 
-tag: cross-platform
+tag: cross-platform, dotnet
 #>
 
 [CmdletBinding()] Param (
-  [Parameter(Mandatory=$true)] [ValidateSet('Update-Packages')] [string] $Action,
+  [Parameter(Mandatory=$true)] [ValidateSet('Update-Packages', 'Clean')] [string] $Action,
+  [string] $Path = '.',
   [switch] $PreRelease)
 
-# Start of Main function
-function Main() {
-  # debug
-  # ('Value of action ' + $Action)
 
+function UpdatePackages() {
   # one liner if else example
   'Updating packages to ' + $( if ($PreRelease) {'pre-release'} else {'stable'} )
 
-
   $regex = 'PackageReference Include="([^"]*)" Version="([^"]*)"'
 
-  ForEach ($file in Get-ChildItem . -recurse | Where-Object {$_.extension -like "*proj"}) {
+  ForEach ($file in Get-ChildItem $Path -Recurse | Where-Object {$_.extension -like "*proj"}) {
       $packages = Get-Content $file.FullName |
           Select-String -pattern $regex -AllMatches | 
           ForEach-Object {$_.Matches} | 
@@ -42,10 +40,36 @@ function Main() {
           Sort-Object -Unique
 
       ForEach ($package in $packages) {
-          Write-Host "Update $file package :$package"  -foreground 'magenta'
+          Write-Host "Update $file package :$package" -foreground 'magenta'
           $fullName = $file.FullName
           Invoke-Expression ("dotnet add $fullName package $package" + $( if ($PreRelease) {' --prerelease'} ))
       }
+  }
+}
+
+
+<#
+.SYNOPSIS
+  Clean dotnet projects, recurse
+
+.NOTES
+  Ref Cmd online in a numbr of sources,
+  Get-ChildItem -Include bin,obj -Recurse | Remove-Item -Recurse -Force
+#>
+
+function CleanProjects() {
+  foreach ($item in Get-ChildItem -Recurse $Path -Include bin,obj) {
+    Remove-Item -Recurse -Force $item
+  }
+}
+
+# Start of Main function
+function Main() {
+  'Current Path: ' + $Path
+
+  switch ($Action) {
+      "Update-Packages" { UpdatePackages }
+      "Clean" { CleanProjects }
   }
 }
 
