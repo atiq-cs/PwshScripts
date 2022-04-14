@@ -67,7 +67,7 @@ function Main() {
     # Write-Verbose "About to download package from '$downloadURL'" -Verbose
     "Downloading package from '$downloadURL'"
 
-    $targetDir = 'D:\PFiles_x64\choco'
+    $targetDir = $PFilesX64Dir
     $packagePath = $targetDir + '\' + $packageName
 
     # show version of previous ssh binary
@@ -77,7 +77,7 @@ function Main() {
     & "$targetDir\ssh\ssh" -V
     [System.Environment]::NewLine
 
-    Invoke-WebRequest -Uri $downloadURL -OutFile $packagePath
+    Invoke-WebRequest -Uri "$downloadURL" -OutFile $packagePath
 
     # prepare target dir
     if (Test-Path "$targetDir\ssh.old") { Remove-Item -Recurse "$targetDir\ssh.old" }

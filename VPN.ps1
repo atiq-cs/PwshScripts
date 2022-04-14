@@ -1,49 +1,49 @@
 <#
 .SYNOPSIS
-VPN Powershell Script to connect and disconnect
+  VPN Powershell Script to connect and disconnect
 .DESCRIPTION
-This script provides easier usage of Cisco anyconnect CLI tool, utilizes proven
-methods to connect. The script almost never fails.
+  This script provides easier usage of Cisco anyconnect CLI tool, utilizes proven
+  methods to connect. The script almost never fails.
 
 .PARAMETER Action
-VPN Action to perform
+  VPN Action to perform
 .EXAMPLE
-Connect example,
+  Connect example,
 
-  VPN.ps1 connect
+    VPN.ps1 connect
 
-Disconnect example,
+  Disconnect example,
 
-  VPN.ps1 disconnect
+    VPN.ps1 disconnect
 
 .NOTES
-Putty Reg abstraction temporarily allows us to open source it. In future replace that with some
-config (containing URLs)
-Added support for forced disconnect in case it helps when shell is hang and it won't connect
-anymore. This needs to be tested.
+  Putty Reg abstraction temporarily allows us to open source it. In future replace that with some
+  config (containing URLs)
+  Added support for forced disconnect in case it helps when shell is hang and it won't connect
+  anymore. This needs to be tested.
 
-Before running this script ensure Service 'VPNAgent' Running. Usually it's
-installed by default with CPE deployment of cisco anyconnect on client
-machines.
+  Before running this script ensure Service 'VPNAgent' Running. Usually it's
+  installed by default with CPE deployment of cisco anyconnect on client
+  machines.
 
-VPN component will fail if corpnet's VM node is down.
+  VPN component will fail if corpnet's VM node is down.
 
-vpn tool draft cmd example,
+  vpn tool draft cmd example,
 
-  "connect `"Profile Name`"`r`n `r`nexit" | & "${Env:ProgramFiles(x86)}\Cisco\Cisco`
-  	AnyConnect Secure Mobility Client\vpncli.exe" -s
+    "connect `"Profile Name`"`r`n `r`nexit" | & "${Env:ProgramFiles(x86)}\Cisco\Cisco`
+      AnyConnect Secure Mobility Client\vpncli.exe" -s
 
-From `COMSPEC`,
+  From `COMSPEC`,
 
-  vpncli.exe -s < anyconnect.txt
+    vpncli.exe -s < anyconnect.txt
 
-debug,
-  .\vpncli connect "Americas West"
+  debug,
+    .\vpncli connect "Americas West"
 
-### Ref
-- The redirection case for powershell: [reddit](https://www.reddit.com/r/PowerShell/comments/10kz2v/input_redirection_to_executable)
-- old doc, [vpn manual at mik.ua](https://docstore.mik.ua/univercd/cc/td/doc/product/vpn/client/3_6/admin_gd/vcach4.htm)
-- [Minimal Shell and Pwsh Scripts](https://github.com/atiq-cs/pwsh-scripts)
+  ### Ref
+  - The redirection case for powershell: [reddit](https://www.reddit.com/r/PowerShell/comments/10kz2v/input_redirection_to_executable)
+  - old doc, [vpn manual at mik.ua](https://docstore.mik.ua/univercd/cc/td/doc/product/vpn/client/3_6/admin_gd/vcach4.htm)
+  - [Minimal Shell and Pwsh Scripts](https://github.com/atiq-cs/pwsh-scripts)
 #>
 
 [CmdletBinding()] Param (
@@ -54,37 +54,37 @@ debug,
 
 <#
 .SYNOPSIS
-VPN function
+  VPN function
 .DESCRIPTION
-Provides methods to connect and disconnect
+  Provides methods to connect and disconnect
 .PARAMETER Action
-Cmdlet param `$Action` is resused.
+  Cmdlet param `$Action` is resused.
 .EXAMPLE
   VPN
 .NOTES
-- Please replace $corpNetNode with your own VM hostname. If you have multiple
-	dev VMs, use hostname of any of them.
-- Powershell 7 or higher recommended for cross-platform.
-- connect and disconnect are in same method as they share some variables
+  - Please replace $corpNetNode with your own VM hostname. If you have multiple
+    dev VMs, use hostname of any of them.
+  - Powershell 7 or higher recommended for cross-platform.
+  - connect and disconnect are in same method as they share some variables
 
-For different regions, we need to modify following line in script,
+  For different regions, we need to modify following line in script,
 
-	connect `"Americas West`"`
+    connect `"Americas West`"`
 
-To specify correct VPN target profile,
-- string containing escape sequence requires double quoting
+  To specify correct VPN target profile,
+  - string containing escape sequence requires double quoting
 
-*notes on disconnect*
-This hangs when client is already disconnected,
-Example,
-   & $BinaryPath disconnect
-Hence, we do check ICMP reply from a node in CorpNet.
+  *notes on disconnect*
+  This hangs when client is already disconnected,
+  Example,
+    & $BinaryPath disconnect
+  Hence, we do check ICMP reply from a node in CorpNet.
 
-If you have putty config for your devvm/devserver, this can come from registry,
+  If you have putty config for your devvm/devserver, this can come from registry,
 
-  $ConfigName = 'devvm-fb1'
-  $corpNetNode = Get-ItemPropertyValue ('HKCU:Software\SimonTatham\PuTTY\Sessions\' +
-      $ConfigName) -Name HostName
+    $ConfigName = 'devvm-fb1'
+    $corpNetNode = Get-ItemPropertyValue ('HKCU:Software\SimonTatham\PuTTY\Sessions\' +
+        $ConfigName) -Name HostName
 #>
 function VPN() {
 	$VPNService = 'VPNAgent'

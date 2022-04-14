@@ -1,32 +1,32 @@
 <#
 .SYNOPSIS
-Initialize Specified Application
+  Initialize Specified Application
 .DESCRIPTION
-Modify Env Path
-
-ToDo: set dim: 152x18
+  Initializes shell/env for application
 
 .PARAMETER AppName
-name of app for which to init
-Should also replace functionalities provided by PARAM psConsoleType
-Console type: for future use, `Init-App` replaces it for now.
+  name of app for which to init
+  Should also replace functionalities provided by PARAM psConsoleType
+  Console type: for future use, `Init-App` replaces it for now.
 
-ToDo: except array of strings instead of a string
+.PARAMETER IsCodeFB
+  For StartX CodeFB don't run certain stuffs
 .EXAMPLE
- Init-App
-is equivalent to,
- Init-App resetEnvPath
+  Init-App
+  is equivalent to,
+  Init-App resetEnvPath
 
 .NOTES
-targetting apps i.e., choco, python (ML)
+  targetting apps i.e., choco, python (ML)
 
-Required following Env Vars,
- - $PFilesX64Dir
+  Required following Env Vars,
+  - $PFilesX64Dir
 #>
 
 [CmdletBinding()] Param (
-  [ValidateSet('admin', 'resetEnvPath', 'choco', 'dotnet', 'git-cmd', 'git', 'fb-tools', 'node',
-  'pwsh', 'openssh', 'python')] [string] $AppName = 'resetEnvPath')
+  [string] $AppName = 'resetEnvPath',
+  [bool] $IsCodeFB = $False
+)
 
 function AddToEnvPath([string] $path = ';') {
   if (! (Test-Path $path)) {
@@ -75,30 +75,11 @@ function InitVariables([string] $InitType = 'resetEnvPath') {
 
   switch( $InitType ) {
     'admin' {
-      (Get-Host).UI.RawUI.WindowTitle = "root @ FB Terminal"
+      (Get-Host).UI.RawUI.WindowTitle = "root @ Matrix Terminal"
       # choco
       InitVariables 'choco'
-      $SourceList = choco sources list
-      # previous, see if we still need this after running `Cleanup-FBIT`
-      # if (! $SourceList[1].Contains('chocolatey')) {
-      #   Write-Host 'choco first entry is different, have a look!'
-      #   return
-      # }
+      .\Choco-Util
 
-      if ($SourceList.Length -lt 4 -Or ! $SourceList[1].Contains('chocolatey')) {
-        Write-Host 'choco first entry is different, have a look! auto fixing..'
-        choco source add -n=chocolatey -s="https://chocolatey.org/api/v2/"
-      }
-      if ($SourceList[1].Contains('[Disabled]')) {
-        # choco source add -n=chocolatey -s="https://chocolatey.org/api/v2/"
-        choco source enable -n=chocolatey
-        # choco source remove -n cpe_client
-        # choco source remove -n wfh
-        choco source disable -n=cpe_client
-        choco source disable -n=wfh
-        choco sources list
-        return
-      }
       return
     }
     'choco' {
@@ -107,7 +88,7 @@ function InitVariables([string] $InitType = 'resetEnvPath') {
       AddToEnvPath( $Env:ChocolateyInstall + '\bin' )
 
       # Chocolatey profile
-      $ChocolateyProfile = "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
+      $ChocolateyProfile = "$Env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
       if (Test-Path($ChocolateyProfile)) {
         Import-Module "$ChocolateyProfile"
       }
@@ -122,7 +103,10 @@ function InitVariables([string] $InitType = 'resetEnvPath') {
         '\Microsoft\WindowsApps;C:\windows\System32\WindowsPowerShell\v1.0;' + $PSHOME + ';' +
         $PwshScriptDir
 
+      # TODO: iterate over a list instead
       if (Test-Path Env:DOTNET_ROOT) { Remove-Item Env:DOTNET_ROOT }
+      if (Test-Path Env:ChocolateyInstall) { Remove-Item Env:ChocolateyInstall }
+      if (Test-Path Env:ChocolateyToolsLocation) { Remove-Item Env:ChocolateyToolsLocation }
 
       return
     }
@@ -151,11 +135,17 @@ function InitVariables([string] $InitType = 'resetEnvPath') {
 
       return
     }
-    'fb-tools' {  # required to utilize tooling
-      (Get-Host).UI.RawUI.WindowTitle = "root @ FB Terminal with fb-tools"
-
-      # choco fbit
+    'meta' {  # required to utilize tooling
       InitVariables 'choco'
+
+      # IsCodeFB is used to indicate that location push is not required;
+      # also check usage example in 'StartX.ps1'
+      #   Init-App.ps1 fb-tools $False
+      if (! $IsCodeFB) {
+        (Get-Host).UI.RawUI.WindowTitle = "root @ FB Terminal with fb-tools"
+        # choco fbit
+        Choco-Util.ps1 'META'
+      }
 
       # CPE\lib to PSModulePath, firt line is FB only
       $CPEPath = 'C:\WINDOWS\CPE\lib\powershell'
@@ -165,24 +155,6 @@ function InitVariables([string] $InitType = 'resetEnvPath') {
       AddToEnvPath('C:\opscode\chef\embedded\bin')
       # ssh support for VSCode
       AddToEnvPath($Env:ChocolateyToolsLocation + '\fb.gitbash\usr\bin')
-
-      $SourceList = choco sources list
-
-      if (! $SourceList[3].Contains('cpe_client')) {
-        Write-Host 'choco first entry is different, have a look!'
-        return
-      }
-
-      if ($SourceList[3].Contains('[Disabled]')) {
-        # choco source add -n=wfh -s="C:\chef\solo\confectioner\latest"
-        # choco source add -n=cpe_client -s="https://confectioner.thefacebook.com/"
-        choco source enable -n=cpe_client
-        choco source enable -n=wfh
-        # choco source remove -n chocolatey
-        choco source disable -n=chocolatey
-        choco sources list
-        return
-      }
       return
     }
     'git-cmd' {
@@ -200,11 +172,11 @@ function InitVariables([string] $InitType = 'resetEnvPath') {
       AddToEnvPath( $PFilesX64Dir + '\Node' )
       AddToEnvPath( $Env:APPDATA + '\npm' )
 
-      Push-Location D:\Code\TS
-      return
-    }
-    'pwsh' {
-      AddToEnvPath $PwshScriptDir
+      if (! $IsCodeFB) {
+        (Get-Host).UI.RawUI.WindowTitle = "TypeScript/Node Terminal"
+        # temporarily using IsCodeFB to prevent location push
+        Push-Location D:\Code\TS
+      }
       return
     }
     'openssh' {
@@ -213,6 +185,7 @@ function InitVariables([string] $InitType = 'resetEnvPath') {
       return
     }
     'python' {
+      (Get-Host).UI.RawUI.WindowTitle = "ML Workstation"
       AddToEnvPath( $PFilesX64Dir + '\python3' )
       AddToEnvPath( $PFilesX64Dir + '\python3\Scripts' )
 

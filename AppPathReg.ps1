@@ -20,12 +20,12 @@
   actual binary path
 
 .EXAMPLE
-AppPathReg Update Signal "$PFilesX64Dir\signal\Signal.exe"
-AppPathReg Chrome "$Env:ProgramFiles\Google\Chrome\Application\Chrome.exe"
-AppPathReg Skype "$PFilesX64Dir\Skype\Skype.exe"
+  AppPathReg Update Signal "$PFilesX64Dir\Signal\Signal.exe"
+  AppPathReg Chrome "$Env:ProgramFiles\Google\Chrome\Application\Chrome.exe"
+  AppPathReg Skype "$PFilesX64Dir\Skype\Skype.exe"
 
 Elevated,
-$ .\AppPathReg Remove Signal
+  AppPathReg Remove Signal
 
 .NOTES
 The ternary operator is introduced in Pwsh 7, ref:

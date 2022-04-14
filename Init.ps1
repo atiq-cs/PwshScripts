@@ -83,8 +83,9 @@ Startx Apps,
 
 function Main() {
   .\Init-App resetEnvPath
-  # Init-App git-cmd
   Init-App dotnet
+  # VS Code requires git. Hence, default now
+  Init-App git-cmd
 
   'pwsh ' + [string] $PSVersionTable.PSVersion + ' on ' + [string] $PSVersionTable.OS
   Write-Host ' '
