@@ -9,7 +9,7 @@
   Should also replace functionalities provided by PARAM psConsoleType
   Console type: for future use, `Init-App` replaces it for now.
 
-.PARAMETER IsCodeFB
+.PARAMETER IsCodeMeta
   For StartX CodeFB don't run certain stuffs
 .EXAMPLE
   Init-App
@@ -25,7 +25,7 @@
 
 [CmdletBinding()] Param (
   [string] $AppName = 'resetEnvPath',
-  [bool] $IsCodeFB = $False
+  [bool] $IsCodeMeta = $False
 )
 
 function AddToEnvPath([string] $path = ';') {
@@ -138,16 +138,15 @@ function InitVariables([string] $InitType = 'resetEnvPath') {
     'meta' {  # required to utilize tooling
       InitVariables 'choco'
 
-      # IsCodeFB is used to indicate that location push is not required;
+      # IsCodeMeta is used to indicate that location push is not required;
       # also check usage example in 'StartX.ps1'
-      #   Init-App.ps1 fb-tools $False
-      if (! $IsCodeFB) {
-        (Get-Host).UI.RawUI.WindowTitle = "root @ FB Terminal with fb-tools"
-        # choco fbit
-        Choco-Util.ps1 'META'
+      #   Init-App.ps1 Meta $False
+      if (! $IsCodeMeta) {
+        (Get-Host).UI.RawUI.WindowTitle = "root @ Meta Terminal"
+        .\Choco-Util.ps1 'META'
       }
 
-      # CPE\lib to PSModulePath, firt line is FB only
+      # CPE\lib to PSModulePath, firt line is META only
       $CPEPath = 'C:\WINDOWS\CPE\lib\powershell'
       if ($Env:PSModulePath.Contains($CPEPath) -Eq $False) { $Env:PSModulePath += ';' + $CPEPath }
 
@@ -172,9 +171,9 @@ function InitVariables([string] $InitType = 'resetEnvPath') {
       AddToEnvPath( $PFilesX64Dir + '\Node' )
       AddToEnvPath( $Env:APPDATA + '\npm' )
 
-      if (! $IsCodeFB) {
+      if (! $IsCodeMeta) {
         (Get-Host).UI.RawUI.WindowTitle = "TypeScript/Node Terminal"
-        # temporarily using IsCodeFB to prevent location push
+        # temporarily using IsCodeMeta to prevent location push
         Push-Location D:\Code\TS
       }
       return

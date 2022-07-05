@@ -23,7 +23,7 @@
 
 # Update repository using libgit2sharp
 function UpdateRepo() {
-  $GitUtilPath = 'D:\git_ws\GitUtility'
+  $GitUtilPath = 'D:\Code\CS\GitUtility'
   Write-Host -NoNewline "Git Utility: "
   dotnet run --project $GitUtilPath pull
   # git pull origin master
@@ -38,26 +38,31 @@ function UpdateRepo() {
   InitConsoleUI
 #>
 function InitConsoleUI() {
-  (Get-Host).UI.RawUI.WindowTitle = $(if ($PHOST_TYPE -Eq 'office' ) { "FB Terminal" } else { "Matrix Terminal" })
+  (Get-Host).UI.RawUI.WindowTitle = $(if ($PHOST_TYPE -Eq 'office' ) { "Meta Terminal" } else { "Matrix Terminal" })
 }
 
 # Brief help
 function ShowHelp() {
   Write-Host '
 Startx Apps,
-- Chrome
 - Code
+- CodeFB
 - Vpn connect and disconnect
-- fbit-admin
 - KeePass
+
+Available Shells,
+- Meta
+- Pwsh
+- SSH
+
+Reg Apps,
+- Chrome
 - Notepad++
-- pwsh
-- Sgdm (DiffMerge)
-- WinMerge
 
 -- Deprecated or Unused --
-- DevEnv
-- CodeFB
+- Sgdm (DiffMerge)
+- WinMerge # Code Built In Diff Tool
+- DevEnv   # Code
 - Messenger
 - WhatsApp
 - Workchat

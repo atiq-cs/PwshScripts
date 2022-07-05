@@ -53,7 +53,7 @@ function Get-DirAlias([string] $location = $(Get-Location)) {
 # Set prompt
 function prompt {
   return "[$($Home.SubString($Home.LastIndexOf('\')+1))@" + $(If ($PHOST_TYPE `
-    -eq 'office') { 'fb' } Else { $PHOST_TYPE }) + " $(Get-DirAlias)]$ "
+    -eq 'office') { 'meta' } Else { $PHOST_TYPE }) + " $(Get-DirAlias)]$ "
 }
 
 # Set Current Working Dir

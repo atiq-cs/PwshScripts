@@ -11,8 +11,11 @@
   New-Shell -Type SSH
 
 .NOTES
-  Type Pwsh opens an elevated prompt
+  With Type specified as Pwsh it opens an elevated prompt
   Calling without a type specified opens a regular pwsh
+
+  * Once in a while, Pwsh shell's cannot invoke Start-Process
+    (feels like cmdlet call is dangled,  stderr/stdout probably is the reason)
 #>
 
 [CmdletBinding()] Param (
@@ -29,7 +32,7 @@ function InvokeNewShell() {
     }
     'Meta' { # elevated
       Push-Location $PwshScriptDir
-      Start-Process pwsh -ArgumentList '-NoExit', '-NoLogo', 'Init-App.ps1 fb-tools' -ErrorAction 'Stop' -Verb Runas
+      Start-Process pwsh -ArgumentList '-NoExit', '-NoLogo', 'Init-App.ps1 meta' -ErrorAction 'Stop' -Verb Runas
       Pop-Location
     }
     'SSH' {
@@ -45,6 +48,12 @@ function InvokeNewShell() {
     'Powershell' {
       Start-Process Powershell -ErrorAction 'Stop' -ArgumentList '-NoExit', '-NoLogo', '-Command', `
         { (Get-Host).UI.RawUI.WindowTitle = 'META Powershell' }
+    }
+    'Cmd' { # elevated
+      Push-Location $PwshScriptDir
+      'FYI: utilize Run Dialog for a regular cmd process'
+      Start-Process cmd -ArgumentList '-NoExit', '-NoLogo', 'Init-App.ps1 admin' -ErrorAction 'Stop' -Verb Runas
+      Pop-Location
     }
     default {
       Start-Process pwsh -ErrorAction 'Stop' -ArgumentList '-NoExit', '-NoLogo', '-Command', `

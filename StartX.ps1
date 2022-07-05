@@ -1,51 +1,49 @@
 <#
 .SYNOPSIS
-Start FB App
+  Launch Applications that require initializations and customizations
 .DESCRIPTION
-To Launch a new shell utilize `New-Shell` script.
+  To Launch a new shell utilize `New-Shell` script.
 
-ToDo: Utilize split-path
-ToDo: replace InitFBEnvironment with a lite-weight demon or app which sleeps most of the time..
+  ToDo: Utilize split-path
+  ToDo: replace InitMETAEnv with a lite-weight daemon or app which sleeps most of the time..
 
-This application can be considered as an extension to `Start-Process` cmdlet. We perform
-initializations for some of the applications right before calling `Start-Process`.
+  This application can be considered as an extension to `Start-Process` cmdlet. We perform
+  initializations for some of the applications right before calling `Start-Process`.
 
-Attributes of processes to consider,
-- fb process (requires fb related initialization)
-- verbosity of the app
+  Attributes of Apss to consider,
+  - Meta process (requires META related initialization)
+  - verbosity of the app
 
-types,
-1: non-verbose, non-fb
-2: verbose, non-fb i.e, VSCode
-3: verbose, fb i.e, FBCode
+  types,
+  1: non-verbose, non-meta
+  2: verbose, non-meta i.e, VSCode
+  3: verbose, meta i.e, CodeFB
 
-ToDo: support argument list
+  ToDo: support argument list
 
 .PARAMETER AppName
-name of app for which to init
+  name of app for which to init
 .EXAMPLE
-
+  StartX CodeFB
 .NOTES
-targetting apps i.e., WorkChat, WhatsApp, 
+  If Verbose is specified open a debug Window and redirect out
 
-If Verbose is specified open a debug Window and redirect out
+  TODO: retrieve these properties (verbosity, init requirements) from dictionary data structure
+  - try this later
 
-Later, retrieve these values from a dictionary
- - try this later
+  Required following Env Vars,
+  - $PFilesX64Dir
 
-Required following Env Vars,
- - $PFilesX64Dir
+  Deprecated: targetting apps i.e., WorkChat, WhatsApp
 
-* Sometimes the `pwsh` shell can malfunction when all Start-Process calls might be dangled!
+  ref,
+  - https://stackoverflow.com/questions/49375418/start-process-redirect-output-to-null
+  - https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.management/start-process
+  - [Parameter Splatting](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_splatting)
+  - [Split-Path](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.management/split-path)
 
-ref,
-- https://stackoverflow.com/questions/49375418/start-process-redirect-output-to-null
-- https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.management/start-process
-- [Parameter Splatting](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_splatting)
-- [Split-Path](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.management/split-path)
-
-Reference on how to use these path vars,
- https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_environment_variables
+  Reference on how to use these path vars,
+  https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_environment_variables
 #>
 
 [CmdletBinding()] Param (
@@ -65,13 +63,13 @@ function AddToEnvPath([string] $path = ';') {
   }
 }
 
-function InitFBEnvironment([string] $authToken = '') {
+function InitMETAEnv([string] $authToken = '') {
   # required to set only once across all pwsh instances
   $Env:ChocolateyToolsLocation = 'D:\PFiles_x64\chocolatey\tools'
-  # this is required for all FB App Launches
+  # this is required for all META App Launches
   AddToEnvPath $Env:ChocolateyToolsLocation
 
-  <#
+  <# ToDo: post in CPE group
   # renew authentication
   $CCCertsExe = $Env:ChocolateyToolsLocation + '\cc-certs.exe'
   if (!(Test-Path $CCCertsExe)) {
@@ -108,22 +106,21 @@ function InitFBEnvironment([string] $authToken = '') {
   }
   #>
 
-  'cc-certs is deprecated. Use Sks Agent instead.'
+  # 'cc-certs is deprecated. Use Sks Agent instead.'
+  & "$Env:ChocolateyToolsLocation\..\bin\sks-agent.exe" renew --menu-title
 }
 
 
 <#
 .SYNOPSIS
-Facilitates restoring Env Path Variable
+  Facilitates restoring Env Path Variable
 .DESCRIPTION
-Modify Env Path
-
-Worflow should be,
-based on 
+  Modify Env Path
+  Worflow should be, based on  ...
 .PARAMETER NewPath
-Value for the Env Var
+  Value for the Env Var
 .EXAMPLE
-SetEnvPath $oldPathValue
+  SetEnvPath $oldPathValue
 .NOTES
 #>
 function SetEnvPath([string] $NewPath) {
@@ -134,26 +131,24 @@ function SetEnvPath([string] $NewPath) {
 
 <#
 .SYNOPSIS
-Second Method of this Script
+  Launches Microsoft Store Apps with std out/err customizations
 .DESCRIPTION
-Start Microsoft Store App
-
-The cmdlet does not support arguments for Store App URI yet. Hence, we invoke them in a new Window
+  The cmdlet does not support arguments for Store App URI yet
 .PARAMETER AppName
-Store App URI
+  Store App URI, suffix: ':'
 .EXAMPLE
-LaunchAppEx Messenger:
+  LaunchAppEx Messenger:
 .NOTES
-TODO: deprecate this use Start-Process directly instead
-However, for debugging purpose we might need to do a small script to launch
-process with redirect standard out / err set.
+  TODO: deprecate this to use Start-Process directly instead
+  However, for debugging purpose we might need to do a small script to launch
+  process with redirect standard out / err set.
 
-ToDo: don't InitFB Environment here instead build a lite weight tool
-Temporary implementation, should be replaced by use of Dictionary
-Later, we would need args support just like `Start-Process` cmdlet
+  ToDo: don't InitFB Environment here instead build a lite weight tool
+  Temporary implementation, should be replaced by use of Dictionary
+  Later, we would need args support just like `Start-Process` cmdlet
 
-For debug, utilize,
- '-NoExit', 
+  For debug, utilize,
+  '-NoExit', 
 #>
 function LaunchAppEx([string] $AppName) {
   if (! $AppName.EndsWith(':')) { return $False }
@@ -201,6 +196,7 @@ function StartProcess([string] $AppName) {
     Write-Host -ForegroundColor Red 'Binary not found:' $BinaryPath
     return 
   }
+  # debug print: $BinaryPath
 
   $BinaryDir = Get-ItemPropertyValue $pathKey -Name Path
 
@@ -218,11 +214,11 @@ function StartProcess([string] $AppName) {
       # Being in home dir location is not required
       $RedirectStandardOutVal = $PwshScriptDir + '\log\' + $AppName + '_out.log'
     }
-    'CodeFB' {    # verbose, fb, follows VS Code
+    'CodeFB' {    # verbose, Meta, follows VS Code
       # may require a duo push as well for VSCode and some other apps
-      InitFBEnvironment
+      InitMETAEnv
 
-      # VSCode for FB only, add VS Paths for Insider; not sure if it's important though
+      # VSCode for META only, add VS Paths for Insider; not sure if it's important though
       # see if this is really required
       # Managed through AppPathReg
       # previous: $Env:ProgramData + '\nuclide\FB-VSCode-Insiders\bin'
@@ -230,24 +226,24 @@ function StartProcess([string] $AppName) {
       AddToEnvPath($BinaryDir)
       $Env:ChocolateyInstall = 'D:\PFiles_x64\Chocolatey'
 
-      Init-App.ps1 fb-tools $True
+      Init-App.ps1 meta $True
       # Init-App.ps1 node $False
 
       # Add ssh when vscode requires fallback, it might access other binaries in that dir too
       AddToEnvPath($Env:ChocolateyToolsLocation + '\fb.gitbash\usr\bin')
 
-      # Actually, the dev version: 'FB VSCode Insiders'
+      # Actually, the dev version: 'VSCode Insiders @ META'
       # Being in home dir location is not required
       $RedirectStandardOutVal = $PwshScriptDir + '\log\' + $AppName + '_out.log'
 
       $argList = @('"' + $BinaryDir + '\resources\app\out\cli.js' + '"')
     }
-    'Messenger' {    # verbose, fb = Workchat, stdout only
-      InitFBEnvironment
+    'Messenger' {    # verbose, Meta, (launch is identical to Workchat), stdout only
+      InitMETAEnv
       $RedirectStandardOutVal = $PwshScriptDir + '\log\' + $AppName + '_out.log'
     }    
-    'WorkChat' {    # verbose, fb, stdout only (stderr 1KB)
-      InitFBEnvironment
+    'WorkChat' {    # verbose, Meta, stdout only (stderr 1KB)
+      InitMETAEnv
 
       # Being in home dir location is not required
       $RedirectStandardOutVal = $PwshScriptDir + '\log\' + $AppName + '_out.log'
@@ -256,7 +252,7 @@ function StartProcess([string] $AppName) {
       $RedirectStandardOutVal = $PwshScriptDir + '\log\' + $AppName + '_out.log'
     }
     'WhatsApp' {    # non-verbose, fb
-      InitFBEnvironment
+      InitMETAEnv
       # $BinaryPath = $Env:LOCALAPPDATA + '\WhatsApp\WhatsApp.exe'
     }
     default {
@@ -264,14 +260,11 @@ function StartProcess([string] $AppName) {
     }
   }
 
-  # SetEnvPath($oldEnvPath)
-  # if (Test-Path Env:ChocolateyToolsLocation) { Remove-Item Env:ChocolateyToolsLocation }
-  
   if ([string]::IsNullOrEmpty($RedirectStandardOutVal) -And [string]::IsNullOrEmpty(
       $RedirectStandardErrVal)) {
     Start-Process -FilePath $BinaryPath -WorkingDirectory $BinaryDir
   }
-  elseif ([string]::IsNullOrEmpty($RedirectStandardErrVal)) { # vscode, CodeFB
+  elseif ([string]::IsNullOrEmpty($RedirectStandardErrVal)) { # VS Code, Code at META
   if ($argList) { # this argList support for code-fb does not seem to be useful, get rid of later
       if ($AppName.Equals('CodeFB')) {
         $Env:ELECTRON_RUN_AS_NODE='1'
@@ -299,5 +292,10 @@ function StartProcess([string] $AppName) {
   SetEnvPath($oldEnvPath)
 }
 
-if (LaunchAppEx $AppName) { return }
-else                      { StartProcess $AppName }
+# Entry Point
+function Main() {
+  if (LaunchAppEx $AppName) { return }
+  else                      { StartProcess $AppName }
+}
+
+Main
