@@ -83,7 +83,7 @@ function InitVariables([string] $InitType = 'resetEnvPath') {
       return
     }
     'choco' {
-      $Env:ChocolateyInstall = 'D:\PFiles_x64\Chocolatey'
+      $Env:ChocolateyInstall = 'C:\PFiles_x64\Chocolatey'
       $Env:ChocolateyToolsLocation = $Env:ChocolateyInstall +'\tools'
       AddToEnvPath( $Env:ChocolateyInstall + '\bin' )
 
@@ -170,11 +170,16 @@ function InitVariables([string] $InitType = 'resetEnvPath') {
     'node' {
       AddToEnvPath( $PFilesX64Dir + '\Node' )
       AddToEnvPath( $Env:APPDATA + '\npm' )
+      # docker
+      'docker removed temporarily'
+      # AddToEnvPath( $Env:ProgramFiles + '\Docker\Docker\resources\bin' )
+      # AddToEnvPath( $Env:ProgramData + '\DockerDesktop\version-bin' )
 
       if (! $IsCodeMeta) {
         (Get-Host).UI.RawUI.WindowTitle = "TypeScript/Node Terminal"
         # temporarily using IsCodeMeta to prevent location push
-        Push-Location D:\Code\TS
+        # D:\Code\TS
+        Push-Location D:\Code\nestjs
       }
       return
     }
@@ -191,6 +196,9 @@ function InitVariables([string] $InitType = 'resetEnvPath') {
       Push-Location D:\Code\ML
       python -m venv env
       env\Scripts\Activate.ps1
+      # pip3 install --upgrade torch
+      # ref, https://stackoverflow.com/questions/2720014/how-to-upgrade-all-python-packages-with-pip
+      # pip3 list --outdated | ForEach { pip3 install -U $_.split(" ")[0] }
       return
     }
     'build' {

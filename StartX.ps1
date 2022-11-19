@@ -235,8 +235,9 @@ function StartProcess([string] $AppName) {
       # Actually, the dev version: 'VSCode Insiders @ META'
       # Being in home dir location is not required
       $RedirectStandardOutVal = $PwshScriptDir + '\log\' + $AppName + '_out.log'
-
-      $argList = @('"' + $BinaryDir + '\resources\app\out\cli.js' + '"')
+      # add to commit log: --ms-enable-electron-run-as-node to run the VS Code META app
+      # ref: bin\code-fb-insiders.cmd
+      $argList = @('"' + $BinaryDir + '\resources\app\out\cli.js' + '"', '--ms-enable-electron-run-as-node')
     }
     'Messenger' {    # verbose, Meta, (launch is identical to Workchat), stdout only
       InitMETAEnv

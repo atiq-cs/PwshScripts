@@ -28,6 +28,8 @@ Elevated,
   AppPathReg Remove Signal
 
 .NOTES
+TODO: add an arg that specifies whether app is 32 bit or 64 bit and prepend dir path
+
 The ternary operator is introduced in Pwsh 7, ref:
 - https://docs.microsoft.com/en-us/powershell/scripting/whats-new/what-s-new-in-powershell-70
 - https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_operators

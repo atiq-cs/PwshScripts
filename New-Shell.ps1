@@ -47,7 +47,7 @@ function InvokeNewShell() {
     }
     'Powershell' {
       Start-Process Powershell -ErrorAction 'Stop' -ArgumentList '-NoExit', '-NoLogo', '-Command', `
-        { (Get-Host).UI.RawUI.WindowTitle = 'META Powershell' }
+        { (Get-Host).UI.RawUI.WindowTitle = 'Qubit Powershell' }
     }
     'Cmd' { # elevated
       Push-Location $PwshScriptDir
@@ -57,7 +57,7 @@ function InvokeNewShell() {
     }
     default {
       Start-Process pwsh -ErrorAction 'Stop' -ArgumentList '-NoExit', '-NoLogo', '-Command', `
-        { (Get-Host).UI.RawUI.WindowTitle = 'META Terminal' }
+        { (Get-Host).UI.RawUI.WindowTitle = 'Qubit Terminal' }
     }
   }
 }

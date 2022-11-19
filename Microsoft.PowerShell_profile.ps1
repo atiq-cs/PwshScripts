@@ -26,9 +26,10 @@ Avoid function declaration such as following, since it is loaded into pwsh env c
 #>
 
 # Set up variables for Pwsh Home Dir and Program Files
-$PwshScriptDir = 'D:\pwsh-scripts'
-$PFilesX64Dir = 'D:\PFiles_x64\choco'
-$PFilesX86Dir = 'D:\PFiles_x86\choco'
+$PwshScriptDir = 'D:\Code\shell'
+$PFilesX64Dir = 'C:\PFiles_x64\choco'
+$PFilesX86Dir = 'C:\PFiles_x86\choco'
+
 If ($Env:COMPUTERNAME -eq '4N391Z2') {
   $PHOST_TYPE = 'office'
 } Else {
@@ -53,8 +54,11 @@ function Get-DirAlias([string] $location = $(Get-Location)) {
 # Set prompt
 function prompt {
   return "[$($Home.SubString($Home.LastIndexOf('\')+1))@" + $(If ($PHOST_TYPE `
-    -eq 'office') { 'meta' } Else { $PHOST_TYPE }) + " $(Get-DirAlias)]$ "
+    -eq 'office') { 'qubit' } Else { $PHOST_TYPE }) + " $(Get-DirAlias)]$ "
 }
 
 # Set Current Working Dir
 Set-Location $PwshScriptDir
+
+# Chocolatey profile
+# Moved it to Init-App.ps1 choco section

@@ -38,7 +38,7 @@ function UpdateRepo() {
   InitConsoleUI
 #>
 function InitConsoleUI() {
-  (Get-Host).UI.RawUI.WindowTitle = $(if ($PHOST_TYPE -Eq 'office' ) { "Meta Terminal" } else { "Matrix Terminal" })
+  (Get-Host).UI.RawUI.WindowTitle = $(if ($PHOST_TYPE -Eq 'office' ) { "Qubit Terminal" } else { "Matrix Terminal" })
 }
 
 # Brief help
@@ -46,22 +46,23 @@ function ShowHelp() {
   Write-Host '
 Startx Apps,
 - Code
-- CodeFB
-- Vpn connect and disconnect
-- KeePass
+- Signal
 
 Available Shells,
-- Meta
 - Pwsh
 - SSH
+- Meta   # deprecated
 
 Reg Apps,
 - Chrome
 - Notepad++
+- WinMerge # Code Built In Diff Tool
+- KeePass
 
 -- Deprecated or Unused --
+- CodeFB
+- Vpn connect and disconnect
 - Sgdm (DiffMerge)
-- WinMerge # Code Built In Diff Tool
 - DevEnv   # Code
 - Messenger
 - WhatsApp
