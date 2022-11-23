@@ -62,15 +62,26 @@ tag: windows-only
 [CmdletBinding()] Param (
   [Parameter(Mandatory=$true)] [ValidateSet('Update', 'Remove')] [string] $Action,
   [Parameter(Mandatory=$true)] [string] $AppName,
-  [string] $Path)
+  [string] $Path,
+  [bool] $Is64Bit=$true)
 
 # Start of Main function
 function Main() {
-  if ($Action.Equals('Update') -And !(Test-Path $Path)) {
-    Write-Host "Not valid path: $Path"
-    return 
+  if ($Action.Equals('Update')) {
+    # Is64Bit doesn't matter when Path is not relative to $PFilesDir
+    # Add program files prefix for relative paths
+    if ( !$Path.Contains(":\PFiles_x") ) {
+      $PFilesDir = $( if ($Is64Bit) { $PFilesX64Dir } else { $PFilesX86Dir } )
+      $Path = $PFilesDir + '\' + $Path
+    }
+
+    if ( !(Test-Path $Path) ) {
+      Write-Host "Not valid path: $Path"
+      return 
+    }
   }
 
+  # Path variable is expected to be empty for action 'Remove'
   if ($Action.Equals('Remove') -And ![string]::IsNullOrEmpty($Path)) {
     Write-Host "Unexpected path argument: $Path"
     return
