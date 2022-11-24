@@ -11,16 +11,15 @@
 .PARAMETER Time
   how long to delay
 .EXAMPLE
-  mdelay.ps1 2 "task completed"
-  mdelay.ps1 5
+  Delay 2 "task completed"
+  Delay 5
 
 tag: windows-only
 #>
 
 [CmdletBinding()] Param (
   [Parameter(Mandatory=$true)] [string] $Time,
-  [string] $Msg,
-  [string] $PwshScriptDir = 'D:\pwsh-scripts')
+  [string] $Msg)
 
 
 <#
@@ -41,6 +40,12 @@ tag: windows-only
   - https://msdn.microsoft.com/en-us/library/3cc9y48w.aspx
 #>
 function Main() {
+  # Validate Script Dir
+  if (!(Test-Path $PwshScriptDir)) {
+    'Script Dir: $PwshScriptDir not set!'
+    return
+  }
+
   # Retrieving $PwshScriptDir from Params
   & ($PwshScriptDir + '\bin\Delay.exe') $Time
   # Start-Sleep $Time
