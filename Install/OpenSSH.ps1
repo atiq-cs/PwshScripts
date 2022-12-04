@@ -1,9 +1,13 @@
 <#
 .SYNOPSIS
-  Installs Windows OpenSSH
+  Installs Windows OpenSSH to a portable location which doesn't require admin permissions
 .DESCRIPTION
-  Checks for latest release of openssh github
+  Able to install and update
+  For the update,
+  - checks for latest release of win32 openssh on github and replace with it
+   (if the binary is in used, has to be closed manually)
 .EXAMPLE
+  $GITHUB_TOKEN='XX..XX' # not required at present
   Install\OpenSSH.ps1
 
 .NOTES
@@ -34,64 +38,77 @@
 #>
 
 function Main() {
-    # Validate Arguments
-    if ([string]::IsNullOrEmpty($GITHUB_TOKEN)) {
-        'GITHUB_TOKEN is empty!'
-        return
-    }
-    if ($GITHUB_TOKEN.Length -lt 40) {
-        'Please check GITHUB_TOKEN!'
-        return
-    }
+  # Validate Arguments
+  if ([string]::IsNullOrEmpty($GITHUB_TOKEN)) {
+      'GITHUB_TOKEN is empty!'
+      return
+  }
+  # 2022-12: looks like not required now
+  # if ($GITHUB_TOKEN.Length -lt 40) {
+  #     'Please check GITHUB_TOKEN!'
+  #     return
+  # }
 
-    # get new release version string
-    $headers = @{
-        'Authorization' = $GITHUB_TOKEN
-    }
+  # get new release version string
+  $headers = @{
+      'Authorization' = $GITHUB_TOKEN
+  }
 
-    $response = Invoke-RestMethod 'https://api.github.com/repos/PowerShell/Win32-OpenSSH/releases/latest' -Method Get -Headers $headers
-    $release = $response.name
+  $response = Invoke-RestMethod 'https://api.github.com/repos/PowerShell/Win32-OpenSSH/releases/latest' -Method Get # -Headers $headers
+  $release = $response.name
+  # instead we could just lower case the first char of the string as well
+  $releaseType = 'Beta'
+  if ($release.EndsWith($releaseType)) {
+    $version = $release.Substring(0, $release.Length - $releaseType.Length)
+    $release = $version.ToLower() + $releaseType
+  }
 
-    # example release tag: v8.1.0.0p1-beta
-    If ([string]::IsNullOrEmpty($release) -Or $release.Length -lt 'v8.1.0.0'.Length) {
-        'invalid release tag'
-        return
-    }
+  # example release tag: V8.9.1.0p1-Beta
+  If ([string]::IsNullOrEmpty($release) -Or $release.Length -lt 'v8.1.0.0'.Length) {
+      'invalid release tag'
+      return
+  }
 
-    # use the release version string to form the download URL
-    $packageName = "OpenSSH-Win64.zip"
+  # use the release version string to form the download URL
+  $packageName = "OpenSSH-Win64.zip"
 
-    # Example download URL
-    #  */PowerShell/Win32-OpenSSH/releases/download/V8.6.0.0p1-Beta/OpenSSH-Win64.zip
-    $downloadURL = "https://github.com/PowerShell/Win32-OpenSSH/releases/download/$release/$packageName"
-    # Write-Verbose "About to download package from '$downloadURL'" -Verbose
-    "Downloading package from '$downloadURL'"
+  # Example download URL (not the v lower cased)
+  #  */PowerShell/Win32-OpenSSH/releases/download/v8.6.0.0p1-Beta/OpenSSH-Win64.zip
+  $downloadURL = "https://github.com/PowerShell/Win32-OpenSSH/releases/download/$release/$packageName"
+  Write-Verbose "About to download package from '$downloadURL'" -Verbose
+  "Downloading package from '$downloadURL'"
 
-    $targetDir = $PFilesX64Dir
-    $packagePath = $targetDir + '\' + $packageName
+  $targetDir = $PFilesX64Dir
+  $packagePath = $targetDir + '\' + $packageName
 
-    # show version of previous ssh binary
-    # it's placed here coz the output is messed up by Invoke-WebRequest
-    # ssh binary is also a different console app, doesn't behave nice in powershell stdout
+  $SSHExe = $targetDir + '\ssh\ssh'
+  # show version of previous ssh binary
+  # it's placed here coz the output is messed up by Invoke-WebRequest
+  # ssh binary is also a different console app, doesn't behave nice in powershell stdout
+  If (Test-Path $SSHExe) {
     'Previous version:'
-    & "$targetDir\ssh\ssh" -V
+    & $SSHExe -V
     [System.Environment]::NewLine
+  } else {
+    'Installing OpenSSH..'
+  }
 
-    Invoke-WebRequest -Uri "$downloadURL" -OutFile $packagePath
+  Invoke-WebRequest -Uri "$downloadURL" -OutFile $packagePath
 
-    # prepare target dir
-    if (Test-Path "$targetDir\ssh.old") { Remove-Item -Recurse "$targetDir\ssh.old" }
-    if (Test-Path "$targetDir\ssh") { Rename-Item "$targetDir\ssh" "$targetDir\ssh.old" }
-    Expand-Archive -Path $packagePath -DestinationPath $targetDir
-    $packageBaseName = $packageName.Substring(0, $packageName.Length-4)
-    Rename-Item "$targetDir\$packageBaseName" "$targetDir\ssh"
-    "Rename '$targetDir\$packageBaseName' to '$targetDir\ssh'"
+  # prepare target dir
+  if (Test-Path "$targetDir\ssh.old") { Remove-Item -Recurse "$targetDir\ssh.old" }
+  if (Test-Path "$targetDir\ssh") { Rename-Item "$targetDir\ssh" "$targetDir\ssh.old" }
+  Expand-Archive -Path $packagePath -DestinationPath $targetDir
+  $packageBaseName = $packageName.Substring(0, $packageName.Length-4)
+  Rename-Item "$targetDir\$packageBaseName" "$targetDir\ssh"
+  "Rename '$targetDir\$packageBaseName' to '$targetDir\ssh'"
 
-    # cleanup
-    Remove-Item $packagePath
-    'New version:'
-    & "$targetDir\ssh\ssh" -V
-    [System.Environment]::NewLine
+  # cleanup
+  Remove-Item $packagePath
+  'Current version:'
+  # doesn't print version currently, TODO: check later
+  & $SSHExe -V
+  # [System.Environment]::NewLine
 }
 
 Main
