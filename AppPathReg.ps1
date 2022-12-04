@@ -20,11 +20,10 @@
   actual binary path
 
 .EXAMPLE
-  AppPathReg Update Signal "$PFilesX64Dir\Signal\Signal.exe"
-  AppPathReg Chrome "$Env:ProgramFiles\Google\Chrome\Application\Chrome.exe"
-  AppPathReg Skype "$PFilesX64Dir\Skype\Skype.exe"
+  AppPathReg Update Signal 'Signal\Signal Beta.exe'
+  AppPathReg Update Chrome ( $Env:ProgramFiles + '\Google\Chrome\Application\Chrome.exe' )
 
-Elevated,
+On Elevated Prompt,
   AppPathReg Remove Signal
 
 .NOTES
