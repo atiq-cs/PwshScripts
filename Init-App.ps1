@@ -110,6 +110,37 @@ function InitVariables([string] $InitType = 'resetEnvPath') {
 
       return
     }
+    'kotlin' {
+      # portable dir
+      $PFilesX64PTDir = 'C:\PFiles_x64\PT'
+
+      # dep for kotlin
+      $JDK_ROOT = $PFilesX64PTDir + '\jdk'
+      if (! (Test-Path ($JDK_ROOT + '\bin'))) {
+        'Please install jdk'
+        # New-Item -ItemType Directory $Env:DOTNET_ROOT
+      }
+      AddToEnvPath( $JDK_ROOT + '\bin' )
+
+      $KOTLIN_ROOT = $PFilesX64PTDir + '\kotlin'
+      if (! (Test-Path ( $KOTLIN_ROOT + '\bin' ))) {
+        'Please install kotlin (jvm version)'
+        # New-Item -ItemType Directory $Env:DOTNET_ROOT
+      }
+      AddToEnvPath( $KOTLIN_ROOT + '\bin' )
+
+      if (Test-Path ( $KOTLIN_ROOT + '\bin' )) {
+        kotlin -version
+      }
+      if (Test-Path ($JDK_ROOT + '\bin')) {
+        java --version
+      }
+
+      # Check if any user path needs to be added
+      #  i.e., .konan location for current user
+
+      return
+    }
     # rest are path updates
     'dotnet' {
       # decoration '$(' is required to not consider space as argument delimeter

@@ -9,8 +9,8 @@
 .NOTES
   Verify defined vars in $PROFILE
 
-  Defaulting to old way: change color from property for color initialization, using RGB Color:
-    {1, 32, 72}
+  Defaulting to old way: change bg color from property for color initialization, using RGB Color:
+    {1, 28, 64}
 
   Run only for choco init / admin,
   Set $Env:ChocolateyInstall, ChocolateyToolsLocation
@@ -89,7 +89,9 @@ Reg Apps,
 
 function Main() {
   .\Init-App resetEnvPath
-  Init-App dotnet
+  # dotnet parts deprecated in favor of kotlin
+  Init-App kotlin
+  # Init-App dotnet
   # VS Code requires git. Hence, default now
   Init-App git-cmd
 
@@ -97,7 +99,8 @@ function Main() {
   Write-Host ' '
 
   InitConsoleUI
-  UpdateRepo
+  # TODO: migrate this to kotlin
+  # UpdateRepo
 
   ShowHelp
 }
