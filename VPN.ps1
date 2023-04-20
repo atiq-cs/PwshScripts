@@ -40,10 +40,11 @@
   debug,
     .\vpncli connect "Americas West"
 
-  ### Ref
+  ### Refs
   - The redirection case for powershell: [reddit](https://www.reddit.com/r/PowerShell/comments/10kz2v/input_redirection_to_executable)
   - old doc, [vpn manual at mik.ua](https://docstore.mik.ua/univercd/cc/td/doc/product/vpn/client/3_6/admin_gd/vcach4.htm)
-  - [Minimal Shell and Pwsh Scripts](https://github.com/atiq-cs/pwsh-scripts)
+  - Previous remote connection script in [GitHub OldScripts](https://github.com/atiq-cs/OldScripts/blob/dev/powershell/rdp.ps1)
+  - More [Minimal Shell and Pwsh Scripts](https://github.com/atiq-cs/pwsh-scripts)
 #>
 
 [CmdletBinding()] Param (
