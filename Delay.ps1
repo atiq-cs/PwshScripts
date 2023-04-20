@@ -48,6 +48,7 @@ function Main() {
 
   # Retrieving $PwshScriptDir from Params
   & ($PwshScriptDir + '\bin\Delay.exe') $Time
+  # Fork in parallel need to make this one wait too
   # Start-Sleep $Time
 
   if ([string]::IsNullOrEmpty($Msg)) {

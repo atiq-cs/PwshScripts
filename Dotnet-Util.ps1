@@ -70,6 +70,10 @@ function Main() {
   switch ($Action) {
       "Update-Packages" { UpdatePackages }
       "Clean" { CleanProjects }
+      default {
+        'Invalid command line argument: ' + $Action
+        return
+      }  
   }
 }
 

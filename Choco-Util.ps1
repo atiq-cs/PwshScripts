@@ -11,6 +11,7 @@
  Choco-Util.ps1 Matrix
 
 .NOTES
+ Demonstrates modern switch syntax
 #>
 
 [CmdletBinding()] Param (
