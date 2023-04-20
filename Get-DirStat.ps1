@@ -53,10 +53,20 @@
 .NOTES
 Handy for cleaning up large directories from an HDD
 
+Demonstrates
+- Pipe
+- Sorting
+- Formating output in table
+- Measure Object
+
 **Refs**
 - https://devblogs.microsoft.com/scripting/getting-directory-sizes-in-powershell
 - Original script from Article above is retained by Konstantin Taranov here,
      https://github.com/ktaranov/powershell-kit/blob/master/Scripts/Get-DirStats.ps1
+
+- New-Object PSObject –Property (HashTable)
+  https://devblogs.microsoft.com/powershell/new-object-psobject-property-hashtable
+
 
 tag: windows-only, file-system
 #>
