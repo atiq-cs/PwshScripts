@@ -207,8 +207,8 @@ function StartProcess([string] $AppName) {
       # Later, retrieve these values from a dictionary
       $AppName = 'VSCode'
       # not required: set in json settings file instead
-      # Init-App git
-      Init-App dotnet
+      # Init-App dotnet
+      Init-App kotlin
       Init-App git-cmd
       AddToEnvPath($PFilesX64Dir + '\VSCode\bin')
       # Being in home dir location is not required

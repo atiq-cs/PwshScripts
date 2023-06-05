@@ -38,6 +38,28 @@ function AddToEnvPath([string] $path = ';') {
   }
 }
 
+function AddKTAppToEnv([string] $App = '', [string] $PFilesX64PTDir = '', [string] $BinaryName = '', [string] $VersionCmdArg = '--version') {
+  if ([string]::IsNullOrEmpty($App)) {
+    Write-Host "App is null / empty string: $App"
+    return
+  }
+  if ([string]::IsNullOrEmpty($PFilesX64PTDir)) {
+    Write-Host "Program files dir is null / empty string: $PFilesX64PTDir"
+    return
+  }
+
+  $APP_ROOT = $PFilesX64PTDir + '\' + $App
+  AddToEnvPath( $APP_ROOT + '\bin' )
+
+  if (Test-Path ( $APP_ROOT + '\bin' )) {
+    if ([string]::IsNullOrEmpty($BinaryName)) {
+      $BinaryName = $App
+    }
+
+    & $BinaryName $VersionCmdArg
+  }
+}
+
 function RemoveFromEnvPath([string] $path = '') {
   if (-not [string]::IsNullOrEmpty($path)) {
     Write-Host "Empty string: $path"
@@ -111,30 +133,17 @@ function InitVariables([string] $InitType = 'resetEnvPath') {
       return
     }
     'kotlin' {
-      # portable dir
+      # portable dir is passed via arg and this is the variable wre are passing
       $PFilesX64PTDir = 'C:\PFiles_x64\PT'
 
       # dep for kotlin
-      $JDK_ROOT = $PFilesX64PTDir + '\jdk'
-      if (! (Test-Path ($JDK_ROOT + '\bin'))) {
-        'Please install jdk'
-        # New-Item -ItemType Directory $Env:DOTNET_ROOT
-      }
-      AddToEnvPath( $JDK_ROOT + '\bin' )
+      AddKTAppToEnv 'jdk19' $PFilesX64PTDir 'java'
+      # $Env:JAVA_HOME = 'C:\PFiles_x64\PT\jdk19'
+      $Env:JAVA_HOME = 'C:\PFiles_x64\PT\jdk'
+      # 'Please install kotlin (jvm version)'
+      AddKTAppToEnv 'kotlin' $PFilesX64PTDir '' '-version'
 
-      $KOTLIN_ROOT = $PFilesX64PTDir + '\kotlin'
-      if (! (Test-Path ( $KOTLIN_ROOT + '\bin' ))) {
-        'Please install kotlin (jvm version)'
-        # New-Item -ItemType Directory $Env:DOTNET_ROOT
-      }
-      AddToEnvPath( $KOTLIN_ROOT + '\bin' )
-
-      if (Test-Path ( $KOTLIN_ROOT + '\bin' )) {
-        kotlin -version
-      }
-      if (Test-Path ($JDK_ROOT + '\bin')) {
-        java --version
-      }
+      AddKTAppToEnv 'gradle' $PFilesX64PTDir
 
       # Check if any user path needs to be added
       #  i.e., .konan location for current user

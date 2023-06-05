@@ -30,9 +30,13 @@ function InvokeNewShell() {
       Start-Process pwsh -ArgumentList '-NoExit', '-NoLogo', 'Init-App.ps1 admin' -ErrorAction 'Stop' -Verb Runas
       Pop-Location
     }
-    'Meta' { # elevated
+    'dotnet' {
       Push-Location $PwshScriptDir
-      Start-Process pwsh -ArgumentList '-NoExit', '-NoLogo', 'Init-App.ps1 meta' -ErrorAction 'Stop' -Verb Runas
+      Start-Process pwsh -ErrorAction 'Stop' -ArgumentList '-NoExit', '-NoLogo', '-Command', `
+      { `
+        (Get-Host).UI.RawUI.WindowTitle = 'dotnet Shell' ; `
+        Init-App.ps1 dotnet `
+      }
       Pop-Location
     }
     'SSH' {
@@ -51,8 +55,13 @@ function InvokeNewShell() {
     }
     'Cmd' { # elevated
       Push-Location $PwshScriptDir
-      'FYI: utilize Run Dialog for a regular cmd process'
+      'FYI: Utilize Run Dialog for a regular cmd process (not elevated)'
       Start-Process cmd -ArgumentList '-NoExit', '-NoLogo', 'Init-App.ps1 admin' -ErrorAction 'Stop' -Verb Runas
+      Pop-Location
+    }
+    'Meta' { # elevated
+      Push-Location $PwshScriptDir
+      Start-Process pwsh -ArgumentList '-NoExit', '-NoLogo', 'Init-App.ps1 meta' -ErrorAction 'Stop' -Verb Runas
       Pop-Location
     }
     default {
