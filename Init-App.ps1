@@ -51,6 +51,11 @@ function AddKTAppToEnv([string] $App = '', [string] $PFilesX64PTDir = '', [strin
   $APP_ROOT = $PFilesX64PTDir + '\' + $App
   AddToEnvPath( $APP_ROOT + '\bin' )
 
+  if ($App.StartsWith('jdk')) {
+    # $Env:JAVA_HOME = 'C:\PFiles_x64\PT\jdk19'
+    $Env:JAVA_HOME = $APP_ROOT
+  }
+
   if (Test-Path ( $APP_ROOT + '\bin' )) {
     if ([string]::IsNullOrEmpty($BinaryName)) {
       $BinaryName = $App
@@ -137,9 +142,8 @@ function InitVariables([string] $InitType = 'resetEnvPath') {
       $PFilesX64PTDir = 'C:\PFiles_x64\PT'
 
       # dep for kotlin
-      AddKTAppToEnv 'jdk19' $PFilesX64PTDir 'java'
-      # $Env:JAVA_HOME = 'C:\PFiles_x64\PT\jdk19'
-      $Env:JAVA_HOME = 'C:\PFiles_x64\PT\jdk'
+      # AddKTAppToEnv 'jdk19' $PFilesX64PTDir 'java'
+      AddKTAppToEnv 'jdk' $PFilesX64PTDir 'java'
       # 'Please install kotlin (jvm version)'
       AddKTAppToEnv 'kotlin' $PFilesX64PTDir '' '-version'
 
