@@ -65,8 +65,9 @@ function InvokeNewShell() {
       Pop-Location
     }
     default {
+      'Invoking default shell..'
       Start-Process pwsh -ErrorAction 'Stop' -ArgumentList '-NoExit', '-NoLogo', '-Command', `
-        { (Get-Host).UI.RawUI.WindowTitle = 'Qubit Terminal' }
+        { (Get-Host).UI.RawUI.WindowTitle = 'Matrix Terminal' }
     }
   }
 }

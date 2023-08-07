@@ -207,10 +207,16 @@ function StartProcess([string] $AppName) {
       # Later, retrieve these values from a dictionary
       $AppName = 'VSCode'
       # not required: set in json settings file instead
-      # Init-App dotnet
-      Init-App kotlin
+
+      # Identify shell type using Env:Path for now
+      if ($oldEnvPath.Contains('dotnet')) {
+        Init-App dotnet
+      } else {
+        Init-App kotlin
+      }
       Init-App git-cmd
       AddToEnvPath($PFilesX64Dir + '\VSCode\bin')
+
       # Being in home dir location is not required
       $RedirectStandardOutVal = $PwshScriptDir + '\log\' + $AppName + '_out.log'
     }
