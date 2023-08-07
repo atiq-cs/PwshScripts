@@ -49,9 +49,10 @@ Startx Apps,
 - Signal
 
 Available Shells,
+- kotlin
 - Pwsh
 - SSH
-- Meta   # deprecated
+- dotnet
 
 Reg Apps,
 - Chrome
@@ -68,6 +69,8 @@ Reg Apps,
 - WhatsApp
 - Workchat
 '
+# deprecated from Shells list
+# - Meta
 }
 
 <#
