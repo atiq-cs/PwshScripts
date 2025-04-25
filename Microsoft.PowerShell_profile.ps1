@@ -1,64 +1,87 @@
 <#
 .SYNOPSIS
-Initialize Pwsh Environment
-.DESCRIPTION
-Provides following for frequent use,
-- highly optimized methods
-- optimal number of variables (avoid touching Sys Env Vars when possible, be
- aware this breaks compatibility with old cmd scripts back from past)
+Initialize Powershell
 
-Actions,
-- Set Location to home dir
+.DESCRIPTION
+Provides nothing much, in addition, to keep it lightweight
+
+Additionally,
+- Sets Location to home dir (this will be undone in future)
 
 .EXAMPLE
-N/A
+Simple one: type pwsh on command
+
 .NOTES
 Requires following Vars to be defined,
-- `$PwshScriptDir`
+- ShellHome
 
-Eliminiates following vars,
-- PHOST
-- SC_DIR
+Avoid additional function declarations since all those from $profile file are
+ loaded into pwsh env cache
 
-Avoid function declaration such as following, since it is loaded into pwsh env cache
-
-  function InitEnvironent()
+tag: platform-agnostic
 #>
 
-# Set up variables for Pwsh Home Dir and Program Files
-$PwshScriptDir = 'D:\Code\shell'
-$PFilesX64Dir = 'C:\PFiles_x64\choco'
-$PFilesX86Dir = 'C:\PFiles_x86\choco'
 
-If ($Env:COMPUTERNAME -eq '4N391Z2') {
-  $PHOST_TYPE = 'office'
-} Else {
-  $PHOST_TYPE = 'matrix'
+# Init Pwsh/Shell Home Dir
+$ShellHome = $(If ($IsLinux) { $HOME } Else { 'D:\Code' } ) + `
+  [System.IO.Path]::DirectorySeparatorChar + 'shell'
+
+If ($IsWindows) {
+  # Init Program File Vars
+  $PFilesX64Dir = 'C:\PFiles_x64\choco'
+  $PFilesX86Dir = 'C:\PFiles_x86\choco'
 }
+
+# Deprecated
+# If ($Env:COMPUTERNAME -eq '4N391Z2') {
+#   $PHOST_TYPE = 'office'
+# }
+
+# Deprecated; prefered var $Env:HOSTNAME
+# $PHOST_TYPE = 'matrix'
+
 
 # Method List
 # get the last part of path, consumed by method: `prompt`
-function Get-DirAlias([string] $location = $(Get-Location)) {
+function Get-DirAlias([string] $path = $(Get-Location)) {
   # check if we are in our home script dir; yes: return home sign, unix retro
-  if ($location.Equals($PwshScriptDir)) { return "~" }
-    
-  # if it ends with \ that means we are in root of drive
+  if ($path.Equals($ShellHome)) { return "~" }
+
+  # Win only
+  # if it ends with Separator that means we are in root of drive
   # in that case return drive
-  if ($location.EndsWith("\")) { return $location.Substring(0, $location.Length-1) }
+  if ($IsWindows -And $path.EndsWith([System.IO.Path]::`
+    DirectorySeparatorChar.ToString())) {
+      return $path.Substring(0, $path.Length-1)
+  }
+
+  # Linux only
+  if ($path.Equals("/")) {
+    return $path
+  }
 
   # Otherwise return only the dir name
-  $lastIndex = [int] $location.lastIndexOf('\') + 1
-  return $location.Substring($lastIndex)
+  return [System.IO.Path]::GetFileName($path)
 }
 
+# TODO:
+#  - deprecate office part
+#
 # Set prompt
 function prompt {
-  return "[$($Home.SubString($Home.LastIndexOf('\')+1))@" + $(If ($PHOST_TYPE `
-    -eq 'office') { 'qubit' } Else { $PHOST_TYPE }) + " $(Get-DirAlias)]$ "
+  # Prefer env user name over parsing $Home string
+  # * Basically, rewrite to avoid all these complicated parsing
+  # return "$($Home.SubString($Home.LastIndexOf([System.IO.Path]::DirectorySeparatorChar)+1))@" `
+  #   + $(If ($PHOST_TYPE -eq 'office') { 'Qubit' } Else { $Env:HOSTNAME }) + " $(Get-DirAlias)$ "
+
+  Write-Host -NoNewline -ForegroundColor Green $($Env:USERNAME + "@" + $Env:HOSTNAME + " $(Get-DirAlias)")
+  return "$ "
 }
 
 # Set Current Working Dir
-Set-Location $PwshScriptDir
+Set-Location $ShellHome
 
-# Chocolatey profile
-# Moved it to Init-App.ps1 choco section
+
+# Win only below:
+#  Chocolatey profile
+#  Moved it to Init-App.ps1 choco section
