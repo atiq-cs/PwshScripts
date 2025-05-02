@@ -126,14 +126,21 @@ function InitVariables([string] $InitType = 'resetEnvPath') {
     # however, this one should run a validation check whether is PATH is clean!
     # ToDo: if choco can support custom install dir for Pwsh 7
     'resetEnvPath' {
-      $Env:Path = 'C:\windows\system32;C:\windows;C:\windows\System32\Wbem;' + $Env:LOCALAPPDATA +
-        '\Microsoft\WindowsApps;C:\windows\System32\WindowsPowerShell\v1.0;' + $PSHOME + ';' +
-        $PwshScriptDir
+      if ($IsWindows) {
+        $Env:Path = 'C:\windows\system32;C:\windows;C:\windows\System32\Wbem;' + $Env:LOCALAPPDATA +
+          '\Microsoft\WindowsApps;C:\windows\System32\WindowsPowerShell\v1.0;' + $PSHOME + ';' +
+          $PwshScriptDir
 
-      # TODO: iterate over a list instead
-      if (Test-Path Env:DOTNET_ROOT) { Remove-Item Env:DOTNET_ROOT }
-      if (Test-Path Env:ChocolateyInstall) { Remove-Item Env:ChocolateyInstall }
-      if (Test-Path Env:ChocolateyToolsLocation) { Remove-Item Env:ChocolateyToolsLocation }
+
+        # TODO: iterate over a list instead
+        #  check if Linus uses DOTNET_ROOT after installing dotnet
+        if (Test-Path Env:DOTNET_ROOT) { Remove-Item Env:DOTNET_ROOT }
+        if (Test-Path Env:ChocolateyInstall) { Remove-Item Env:ChocolateyInstall }
+        if (Test-Path Env:ChocolateyToolsLocation) { Remove-Item Env:ChocolateyToolsLocation }
+      }
+      else {
+        $Env:PATH = '/usr/sbin:/usr/bin:' + $ShellHome + ':' + $PSHOME
+      }
 
       return
     }
