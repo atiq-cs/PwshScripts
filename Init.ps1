@@ -38,12 +38,15 @@ function UpdateRepo() {
   InitConsoleUI
 #>
 function InitConsoleUI() {
-  (Get-Host).UI.RawUI.WindowTitle = $(if ($PHOST_TYPE -Eq 'office' ) { "Qubit Terminal" } else { "Matrix Terminal" })
+  # $(if ($PHOST_TYPE -Eq 'office' ) { "Qubit Terminal" } else { "Matrix Terminal" })
+  # doesn't work on Linux, TODO later
+  (Get-Host).UI.RawUI.WindowTitle = 'Matrix Terminal'
 }
 
 # Brief help
 function ShowHelp() {
-  Write-Host '
+  if ($IsWindows) {
+    Write-Host '
 Startx Apps,
 - Code
 - Signal
@@ -69,34 +72,48 @@ Reg Apps,
 - WhatsApp
 - Workchat
 '
-# deprecated from Shells list
-# - Meta
+  }
 }
 
 <#
 .SYNOPSIS
   The Main Method that calls initialization components
 .DESCRIPTION
-  Modify Env Path
+  Some shell initializations
+  Reset Env Path to clean one
 
-  Adding 'C:\Tools' Usually not required: do a cc-certs renewal based on expiration value and the
+.EXAMPLE
+  ./Init
+
+.NOTES
+  // Deprecated stuff
+  Adding 'C:\Tools' is usually not required: do a cc-certs renewal based on expiration value and the
   dialog box for init won't appear to bother us again! Tools is deprecated by
   ChocolateyToolsLocation
 
-.EXAMPLE
-  .\Init
-.NOTES
   Refs,
   - https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet
 #>
 
 function Main() {
-  .\Init-App resetEnvPath
-  # dotnet parts deprecated in favor of kotlin
-  Init-App kotlin
-  # Init-App dotnet
-  # VS Code requires git. Hence, default now
-  Init-App git-cmd
+  if ($IsLinux) {
+    # Bump up cmd history
+    (Get-PSReadlineOption).MaximumHistoryCount = 16384
+
+    ./Init-App resetEnvPath
+    # TODO: for Linux
+    # Init-App kotlin
+    # Init-App dotnet
+    # not required for Linux, git exec on /usr/bin takes care of that
+    # Init-App git-cmd
+  } Else {
+    .\Init-App resetEnvPath
+    # dotnet parts deprecated in favor of kotlin
+    Init-App kotlin
+    # Init-App dotnet
+    # VS Code requires git. Hence, default now
+    Init-App git-cmd
+  }
 
   'pwsh ' + [string] $PSVersionTable.PSVersion + ' on ' + [string] $PSVersionTable.OS
   Write-Host ' '
