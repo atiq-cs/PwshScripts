@@ -27,7 +27,7 @@ Demonstrates Invoke-WebRequest error handling
 
 [CmdletBinding()] Param (
   [Parameter(Mandatory=$true)]
-   [ValidateSet('1040sa', '1040sd', '1040s1', '1040s2', '1040s3')]
+   [ValidateSet('1040sa', '1040sd', '1040s1', '1040s2', '1040s3', '6781')]
      [string] $FormName,
   [Parameter(Mandatory=$true)] [string] $OutputDir)
 
@@ -37,7 +37,6 @@ function Main() {
   $IRSBaseURL = 'https://www.irs.gov/pub/irs-pdf/'
   $fileName = 'f' + $FormName + '.pdf'
   $Url = $IRSBaseURL + $fileName
-  "URL for the input form: $Url"
 
   # Following Validation since addition of ValidateSet
   # if (-Not ($Url.EndsWith(".pdf"))) {
@@ -53,33 +52,47 @@ function Main() {
   #   Write-Host "Unable to determine file name from URL!"
   #   break
   # }
-
+  $bakFormName = 'f' + $FormName + '_orig.pdf'
 
   Push-Location $OutputDir
-
-  try {
-    # following version is useless, for downloading file we don't use response!
-    #  Errors are usually discovered via Exceptions not responses!
-    # $response = Invoke-WebRequest ...
-    Invoke-WebRequest $Url -OutFile $fileName -ErrorAction Stop
-  }
-  catch {
-    # Handle errors, such as 404 (file not found)
-    if ($_.Exception.Response.StatusCode -eq 404) {
-        Write-Host "Error: File not found (404). Check the URL."
+  if (Test-Path $FormsBackupDir/$bakFormName) {
+    if (Test-Path $fileName) {
+      "$fileName already exists!"
+      Pop-Location
+      break
+    } Else {
+      "Local copy of $bakFormName exists! Using that instead.."
+      Copy-Item $FormsBackupDir/$bakFormName $fileName
+      Pop-Location
+      break
     }
-    else {
-        Write-Host "An error occurred: $($_.Exception.Message)"
-    }
+  } Else {
+    "URL for the input form: $Url"
 
-    Pop-Location
-    break
+    try {
+      # following version is useless, for downloading file we don't use response!
+      #  Errors are usually discovered via Exceptions not responses!
+      # $response = Invoke-WebRequest ...
+      # Invoke-WebRequest $Url -OutFile $fileName -ErrorAction Stop
+    }
+    catch {
+      # Handle errors, such as 404 (file not found)
+      if ($_.Exception.Response.StatusCode -eq 404) {
+          Write-Host "Error: File not found (404). Check the URL."
+      }
+      else {
+          Write-Host "An error occurred: $($_.Exception.Message)"
+      }
+
+      Pop-Location
+      break
+    }
   }
 
-  $item = (Get-Item $fileName)
-  $bakFormName = $item.BaseName + '_orig' + $item.Extension
+  # $item = (Get-Item $fileName)
+  # $bakFormName = $item.BaseName + '_orig' + $item.Extension
   If (-Not (Test-Path $FormsBackupDir)) { New-Item -Type Directory $FormsBackupDir }
-  Copy-Item $fileName forms/$bakFormName
+  Copy-Item $fileName $FormsBackupDir/$bakFormName
   "Retrieving and backing up an original copy of form $FormName completed!"
 
   Pop-Location
