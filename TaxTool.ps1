@@ -20,6 +20,7 @@ Instruction URLs
     and Sched 3)
 - 1040 Sch A: https://www.irs.gov/instructions/i1040sca
 - 1040 Sch D: https://www.irs.gov/instructions/i1040sd
+- 843       : https://www.irs.gov/instructions/i843
 
 
 Demonstrates Invoke-WebRequest error handling
@@ -27,7 +28,7 @@ Demonstrates Invoke-WebRequest error handling
 
 [CmdletBinding()] Param (
   [Parameter(Mandatory=$true)]
-   [ValidateSet('1040sa', '1040sd', '1040s1', '1040s2', '1040s3', '6781')]
+   [ValidateSet('1040sa', '1040sd', '1040s1', '1040s2', '1040s3', '6781', '8949', '843')]
      [string] $FormName,
   [Parameter(Mandatory=$true)] [string] $OutputDir)
 
@@ -70,10 +71,11 @@ function Main() {
     "URL for the input form: $Url"
 
     try {
-      # following version is useless, for downloading file we don't use response!
+      # saving return value on $response is useless, for downloading file we don't use response!
       #  Errors are usually discovered via Exceptions not responses!
       # $response = Invoke-WebRequest ...
-      # Invoke-WebRequest $Url -OutFile $fileName -ErrorAction Stop
+
+      Invoke-WebRequest $Url -OutFile $fileName -ErrorAction Stop
     }
     catch {
       # Handle errors, such as 404 (file not found)
