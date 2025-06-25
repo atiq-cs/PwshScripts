@@ -91,7 +91,7 @@ function Main() {
           return 
         }
 
-        if ($bCtlOutput.Contains("Invalid")) {
+        if ($bCtlOutput.Contains("Invalid") -Or $bCtlOutput.Contains("No default controller")) {
           Write-Host -ForegroundColor Red "bluetoothctl error: $bCtlOutput!"
           return
         }
