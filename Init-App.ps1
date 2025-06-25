@@ -163,25 +163,33 @@ function InitVariables([string] $InitType = 'resetEnvPath') {
     }
     # rest are path updates
     'dotnet' {
-      # decoration '$(' is required to not consider space as argument delimeter
-      $Env:DOTNET_ROOT = $PFilesX64Dir + '\dotnet'
-      if (! (Test-Path $Env:DOTNET_ROOT)) {
-        'Please install net sdk'
-        New-Item -ItemType Directory $Env:DOTNET_ROOT
+      if (-Not $IsWindows) { # Linux
+        # Temporary, TODO: generalize above code to handle this..
+        $Env:DOTNET_ROOT = $HOME + '/.local/dotnet'
+        $Env:PATH = '/usr/sbin:/usr/bin:' + $ShellHome + ':' + $PSHOME + ':' + $Env:DOTNET_ROOT
       }
-      AddToEnvPath( $Env:DOTNET_ROOT )
-      # print net sdk version
-      $index = (dotnet --list-sdks).Count -1
-      $netSDKVersion = (dotnet --list-sdks)[$index]
-      # split to remove install location from output
-      'net sdk: ' + ($netSDKVersion -split '\[')[0]
+      Else {
+        # decoration '$(' is required to not consider space as argument delimeter
+        $Env:DOTNET_ROOT = $PFilesX64Dir + '\dotnet'
+        if (! (Test-Path $Env:DOTNET_ROOT)) {
+          'Please install net sdk'
+          New-Item -ItemType Directory $Env:DOTNET_ROOT
+        }
+        AddToEnvPath( $Env:DOTNET_ROOT )
+        # print net sdk version
+        $index = (dotnet --list-sdks).Count -1
+        $netSDKVersion = (dotnet --list-sdks)[$index]
+        # split to remove install location from output
+        'net sdk: ' + ($netSDKVersion -split '\[')[0]
 
-      # add .net sdk global location for current user
-      $DOTNET_USER_GLOBAL = $Env:USERPROFILE + '\.dotnet\tools'
-      if (Test-Path $DOTNET_USER_GLOBAL) {
-        AddToEnvPath( $DOTNET_USER_GLOBAL )
-      } else {
-        '.net user global path not found!'
+        # add .net sdk global location for current user
+        $DOTNET_USER_GLOBAL = $Env:USERPROFILE + '\.dotnet\tools'
+        if (Test-Path $DOTNET_USER_GLOBAL) {
+          AddToEnvPath( $DOTNET_USER_GLOBAL )
+        }
+        Else {
+          '.net user global path not found!'
+        }
       }
 
       return
