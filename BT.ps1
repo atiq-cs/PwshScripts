@@ -1,34 +1,35 @@
 <#
 .SYNOPSIS
-  Wireless device connection helper
+Wireless device connection helper
+
 .DESCRIPTION
-  bluetooth only for now to control connections to headset and keyboard
+bluetooth only for now, to control connections to headset and keyboard
 
 .PARAMETER Action
-  connect or disconnect
+connect or disconnect
 .PARAMETER DeviceType
-  which device is the target?
+which device is the target?
 
 .EXAMPLE
-  BT.ps1 disconnect headset
-  BT.ps1 connect keyboard
+BT.ps1 disconnect headset
+BT.ps1 connect keyboard
 
 .NOTES
- Device names are hard coded in first block of main method..
- Linux only since `bluetoothctl` is required.
+Device names are hard coded in first block of main method..
+Linux only since `bluetoothctl` is required.
 
-  Arrayfi, dup code could be moved to a method utilizing 'Invoke-Expression'
+Arrayfi, dup code could be moved to a method utilizing 'Invoke-Expression'
 
-  $btclCmd = "bluetoothctl devices Paired"
-  Invoke-Expression $btclCmd
+$btclCmd = "bluetoothctl devices Paired"
+Invoke-Expression $btclCmd
 
-  linux command i.e, 'bluetoothctl devices Paired' ideally returns an array of
-   strings. However, when it returns a single line it is just a string instead
-   of array of strings.
-  Hence, -Match returns
-   - System.Boolean when input is string
-   - returns MatchInfo when input is array of strings
-   one device is paired, next if statement will throw an exception
+linux command i.e, 'bluetoothctl devices Paired' ideally returns an array of
+  strings. However, when it returns a single line it is just a string instead
+  of array of strings.
+Hence, -Match returns
+  - System.Boolean when input is string
+  - returns MatchInfo when input is array of strings
+  one device is paired, next if statement will throw an exception
 
 tag: linux-only
 #>
