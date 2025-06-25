@@ -2,8 +2,7 @@
 .SYNOPSIS
   Wireless device connection helper
 .DESCRIPTION
-  Only via bluetooth for now to control connections to
-   headset and keyboard
+  bluetooth only for now to control connections to headset and keyboard
 
 .PARAMETER Action
   connect or disconnect
@@ -101,6 +100,12 @@ function Main() {
         '----------------------'
         $count = 1
         ForEach ($line in $bCtlOutput) {
+          # Handle verbose output:
+          #   bluez prints UUIDs and Endpoint after listing Devices
+          if (-Not $line.StartsWith("Device")) {
+            break
+          }
+
           # second argument to limit number of tokens
           $deviceName = $line.Split(' ', 3)[2]
           if ($deviceName) {
