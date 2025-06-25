@@ -166,22 +166,22 @@ function InitVariables([string] $InitType = 'resetEnvPath') {
       # decoration '$(' is required to not consider space as argument delimeter
       $Env:DOTNET_ROOT = $PFilesX64Dir + '\dotnet'
       if (! (Test-Path $Env:DOTNET_ROOT)) {
-        'Please install net core'
+        'Please install net sdk'
         New-Item -ItemType Directory $Env:DOTNET_ROOT
       }
       AddToEnvPath( $Env:DOTNET_ROOT )
-      # print net core version
+      # print net sdk version
       $index = (dotnet --list-sdks).Count -1
-      $netCoreVersion = (dotnet --list-sdks)[$index]
+      $netSDKVersion = (dotnet --list-sdks)[$index]
       # split to remove install location from output
-      'net core sdk: ' + ($netCoreVersion -split '\[')[0]
+      'net sdk: ' + ($netSDKVersion -split '\[')[0]
 
-      # add .net core global location for current user
+      # add .net sdk global location for current user
       $DOTNET_USER_GLOBAL = $Env:USERPROFILE + '\.dotnet\tools'
       if (Test-Path $DOTNET_USER_GLOBAL) {
         AddToEnvPath( $DOTNET_USER_GLOBAL )
       } else {
-        'net core user global path not found'
+        '.net user global path not found!'
       }
 
       return
@@ -211,7 +211,7 @@ function InitVariables([string] $InitType = 'resetEnvPath') {
       AddToEnvPath( $PFilesX64Dir + '\git\cmd' )
       return
     }
-    # planned deprecation by 'Git Util' net core app
+    # planned deprecation by 'Git Util', C# app
     'git' {
       # remove git-cmd from path
       RemoveFromEnvPath( $PFilesX64Dir + '\git\cmd' )
