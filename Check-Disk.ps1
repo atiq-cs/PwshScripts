@@ -67,7 +67,9 @@ function Main() {
   journalctl --verify
 
   # hard coded till ZFS migration is complete!
-  $partitions = @('/home', '/')
+  $partitions = @('/home', '/', `
+    '/var/lib/portables', '/var/lib/machines')
+
   foreach ($partition in $partitions) {
       RunScrubOnPartition $partition
   }
