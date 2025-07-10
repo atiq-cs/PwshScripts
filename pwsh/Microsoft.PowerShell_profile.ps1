@@ -1,19 +1,21 @@
 <#
 .SYNOPSIS
-Initialize Powershell
-
+Initialize Pwsh Environment
 .DESCRIPTION
-Provides nothing much, in addition, to keep it lightweight
+Provides following for frequent use,
+- highly optimized methods
+- optimal number of variables (avoid touching Sys Env Vars when possible, be
+ aware this breaks compatibility with old cmd scripts back from past)
 
-Additionally,
-- Sets Location to home dir (this will be undone in future)
+Actions,
+- Set Location to home dir
 
 .EXAMPLE
 Simple one: type pwsh on command
 
 .NOTES
 Requires following Vars to be defined,
-- ShellHome
+- $ShellHome
 
 Avoid additional function declarations since all those from $profile file are
  loaded into pwsh env cache
