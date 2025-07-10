@@ -15,13 +15,14 @@ We have a single line addition at the bottom of `config.nu`,
 source ~/shell/init.nu
 ```
 
-which enables our point of interest: `init.nu`
+which enables our point of interest: `init.nu`.  
 
 By default scripts are cross platform unless a tag `OS_NAME-only` exists.  
   
-Find Different type of PS Scripts,
-- [Unix Only](https://github.com/atiq-cs/pwsh-scripts/search?q=unix-only)
-- [Windows Only](https://github.com/atiq-cs/pwsh-scripts/search?q=windows-only)
+
+Find scripts based on target platforms,
+- [Unix Only](https://github.com/atiq-cs/Shell/search?q=unix-only)
+- [Windows Only](https://github.com/atiq-cs/Shell/search?q=windows-only)
 
 
 *Notations*  
