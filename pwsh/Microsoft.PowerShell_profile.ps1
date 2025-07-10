@@ -1,6 +1,7 @@
 <#
 .SYNOPSIS
 Initialize Pwsh Environment
+
 .DESCRIPTION
 Provides following for frequent use,
 - highly optimized methods
@@ -23,10 +24,10 @@ Avoid additional function declarations since all those from $profile file are
 tag: platform-agnostic
 #>
 
-
 # Init Pwsh/Shell Home Dir
 $ShellHome = $(If ($IsLinux) { $HOME } Else { 'D:\Code' } ) + `
-  [System.IO.Path]::DirectorySeparatorChar + 'shell'
+  [System.IO.Path]::DirectorySeparatorChar + 'shell' + [System.IO.Path]::`
+  DirectorySeparatorChar + 'pwsh'
 
 If ($IsWindows) {
   # Init Program File Vars
