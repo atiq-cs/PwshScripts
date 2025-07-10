@@ -18,9 +18,15 @@ source ~/shell/init.nu
 which enables our point of interest: `init.nu`.  
 
 By default scripts are cross platform unless a tag `OS_NAME-only` exists.  
-  
 
-Find scripts based on target platforms,
+
+**Official Refs**  
+*site: https://www.nushell.sh*  
+- [Command Reference](https://www.nushell.sh/commands/)
+- [Configuration](https://www.nushell.sh/book/configuration.html) 
+
+
+Find scripts based on target platforms,  
 - [Unix Only](https://github.com/atiq-cs/Shell/search?q=unix-only)
 - [Windows Only](https://github.com/atiq-cs/Shell/search?q=windows-only)
 
