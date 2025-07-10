@@ -28,4 +28,8 @@
 ptyxis --tab --title "bash"
 ptyxis --tab --title "Sync Scheduler"
 ptyxis --tab --title "App Launcher"
-pwsh -NoExit -File ~/shell/Init.ps1
+
+# Default shell: NuShell
+nu
+# previously: powershell
+# pwsh -NoExit -File ~/shell/Init.ps1

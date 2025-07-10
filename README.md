@@ -1,13 +1,29 @@
-## Minimal Shell and Power Scripts
-A minimal, secure and high performance shell unaffected by tons of applications installed in the system. The minimal shell consists of following customizations,
-- `Microsoft.PowerShell_profile.ps1`: high level initializations
-- `Init.ps1`: second level initializations
+### Simplicity brings Power
+**Refs**
+- [Design Principles](https://github.com/atiq-cs/Shell/wiki/Design-Principles)
+- [Wiki Entrypoint](https://github.com/atiq-cs/Shell/wiki)
 
-This shell prefers shortest Env Path variables. To update variable for applications please utilize `Init-App.ps1`.
+A minimal, secure and high performance shell (as if isolated) unaffected by 
+numerous applications and tools installed on the system. The minimal shell 
+consists of following customizations,  
+- `.config/nushell/*.nu`: first level initializations mostly performed by config.nu
+- `init.nu`: second level initializations
 
-- More documentation at [wiki](https://github.com/atiq-cs/pwsh-scripts/wiki)
+We have a single line addition at the bottom of `config.nu`,
 
-By default scripts are cross platform unless a tag `windows-only` exists.
+```bash
+source ~/shell/init.nu
+```
 
+which enables our point of interest: `init.nu`
+
+By default scripts are cross platform unless a tag `OS_NAME-only` exists.  
+  
 Find Different type of PS Scripts,
+- [Unix Only](https://github.com/atiq-cs/pwsh-scripts/search?q=unix-only)
 - [Windows Only](https://github.com/atiq-cs/pwsh-scripts/search?q=windows-only)
+
+
+*Notations*  
+In this document,  
+- Unix refers to Solaris Derivatives *(Illumos kernel based distributions) i.e., OpenIndiana*
