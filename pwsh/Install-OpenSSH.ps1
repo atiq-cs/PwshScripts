@@ -11,6 +11,8 @@
   Install\OpenSSH.ps1
 
 .NOTES
+  * Prior name and location before move to NuShell: 'Install/OpenSSH.ps1'
+
   Deps,
   - $GITHUB_TOKEN: A read only access token from GH
 

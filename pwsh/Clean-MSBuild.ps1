@@ -12,6 +12,7 @@
 
 
 .NOTES
+Prior name and location before move to NuShell: 'dev\clean.ps1'
 Handy for cleaning up large directories from an HDD
 
 Demonstrates
