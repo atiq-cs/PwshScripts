@@ -48,12 +48,19 @@ def main [
   action: string,       # 1. action to perform
   device_type?: string
 ] {
+  # Args validation
   let device_name = if $device_type == null or $device_type == "keyboard" {
     "Keychron K8"
   } else if $device_type == "headset" {
     "TREBLAB Z7-Pro"
+  } else {
+    print $"Error: Unknown device type '($device_type)'"
+    print "Supported types: keyboard, headset"
+    print ""
+    return
   }
 
+  # switch statement on Action
   match $action {
     "connect" => {
       connect_device $device_name
@@ -70,9 +77,16 @@ def main [
         print $"($count). ($line | split row ' ' | skip 2 | str join ' ')"
         $count = $count + 1
       }
+
+      print ""
     }
     _ => {
       print $"Invalid command line argument: ($action)"
+      print "Usage: bt.nu <connect|disconnect|list> [keyboard|headset]"
+      print "Examples:"
+      print "  ./bt.nu connect keyboard"
+      print "  ./bt.nu disconnect headset"
+      print "  ./bt.nu list"
     }
   }
 }
