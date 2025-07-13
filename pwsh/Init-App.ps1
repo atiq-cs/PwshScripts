@@ -128,8 +128,8 @@ function InitVariables([string] $InitType = 'resetEnvPath') {
     'resetEnvPath' {
       if ($IsWindows) {
         $Env:Path = 'C:\windows\system32;C:\windows;C:\windows\System32\Wbem;' + $Env:LOCALAPPDATA +
-          '\Microsoft\WindowsApps;C:\windows\System32\WindowsPowerShell\v1.0;' + $PSHOME + ';' +
-          $PwshScriptDir
+          '\Microsoft\WindowsApps;C:\windows\System32\WindowsPowerShell\v1.0;' + $ShellHome + ';' +
+           $PSHOME
 
 
         # TODO: iterate over a list instead

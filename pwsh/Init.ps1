@@ -109,7 +109,7 @@ function Main() {
   } Else {
     .\Init-App resetEnvPath
     # dotnet parts deprecated in favor of kotlin
-    Init-App kotlin
+    # Init-App kotlin
     # Init-App dotnet
     # VS Code requires git. Hence, default now
     Init-App git-cmd

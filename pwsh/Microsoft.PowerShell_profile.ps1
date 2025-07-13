@@ -18,10 +18,8 @@ Simple one: type pwsh on command
 Requires following Vars to be defined,
 - $ShellHome
 
-Avoid additional function declarations since all those from $profile file are
+Avoid additional function declarations (for example, 'function InitEnvironent()') since all those from $profile file are
  loaded into pwsh env cache
-
-tag: platform-agnostic
 #>
 
 # Init Pwsh/Shell Home Dir
@@ -29,6 +27,7 @@ $ShellHome = $(If ($IsLinux) { $HOME } Else { 'D:\Code' } ) + `
   [System.IO.Path]::DirectorySeparatorChar + 'shell' + [System.IO.Path]::`
   DirectorySeparatorChar + 'pwsh'
 
+# Init Program File Vars
 If ($IsWindows) {
   # Init Program File Vars
   $PFilesX64Dir = 'C:\PFiles_x64\choco'
@@ -67,17 +66,11 @@ function Get-DirAlias([string] $path = $(Get-Location)) {
   return [System.IO.Path]::GetFileName($path)
 }
 
-# TODO:
-#  - deprecate office part
-#
 # Set prompt
 function prompt {
-  # Prefer env user name over parsing $Home string
-  # * Basically, rewrite to avoid all these complicated parsing
-  # return "$($Home.SubString($Home.LastIndexOf([System.IO.Path]::DirectorySeparatorChar)+1))@" `
-  #   + $(If ($PHOST_TYPE -eq 'office') { 'Qubit' } Else { $Env:HOSTNAME }) + " $(Get-DirAlias)$ "
-
-  Write-Host -NoNewline -ForegroundColor Green $($Env:USERNAME + "@" + $Env:HOSTNAME + " $(Get-DirAlias)")
+  $HostName = if ($IsWindows) { $Env:COMPUTERNAME } Else { $Env:HOSTNAME }
+  Write-Host -NoNewline -ForegroundColor Green $($Env:USERNAME + "@" + $HostName + " ")
+  Write-Host -NoNewline -ForegroundColor Cyan $("$(Get-DirAlias)")
   return "$ "
 }
 
