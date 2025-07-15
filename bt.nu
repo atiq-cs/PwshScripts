@@ -20,6 +20,8 @@
 #   ./bt.nu connect keyboard
 #   ./bt.nu disconnect headset
 #   ./bt.nu list
+#
+# tag: linux-only
 # -----------------------------------------------------------------------------
 
 
