@@ -218,7 +218,7 @@ function StartProcess([string] $AppName) {
       AddToEnvPath($PFilesX64Dir + '\VSCode\bin')
 
       # Being in home dir location is not required
-      $RedirectStandardOutVal = $PwshScriptDir + '\log\' + $AppName + '_out.log'
+      $RedirectStandardOutVal = $ShellHome + '\log\' + $AppName + '_out.log'
     }
     'CodeFB' {    # verbose, Meta, follows VS Code
       # may require a duo push as well for VSCode and some other apps
@@ -240,23 +240,23 @@ function StartProcess([string] $AppName) {
 
       # Actually, the dev version: 'VSCode Insiders @ META'
       # Being in home dir location is not required
-      $RedirectStandardOutVal = $PwshScriptDir + '\log\' + $AppName + '_out.log'
+      $RedirectStandardOutVal = $ShellHome + '\log\' + $AppName + '_out.log'
       # add to commit log: --ms-enable-electron-run-as-node to run the VS Code META app
       # ref: bin\code-fb-insiders.cmd
       $argList = @('"' + $BinaryDir + '\resources\app\out\cli.js' + '"', '--ms-enable-electron-run-as-node')
     }
     'Messenger' {    # verbose, Meta, (launch is identical to Workchat), stdout only
       InitMETAEnv
-      $RedirectStandardOutVal = $PwshScriptDir + '\log\' + $AppName + '_out.log'
+      $RedirectStandardOutVal = $ShellHome + '\log\' + $AppName + '_out.log'
     }    
     'WorkChat' {    # verbose, Meta, stdout only (stderr 1KB)
       InitMETAEnv
 
       # Being in home dir location is not required
-      $RedirectStandardOutVal = $PwshScriptDir + '\log\' + $AppName + '_out.log'
+      $RedirectStandardOutVal = $ShellHome + '\log\' + $AppName + '_out.log'
     }
     'Signal' {    # non-verbose, non-fb
-      $RedirectStandardOutVal = $PwshScriptDir + '\log\' + $AppName + '_out.log'
+      $RedirectStandardOutVal = $ShellHome + '\log\' + $AppName + '_out.log'
     }
     'WhatsApp' {    # non-verbose, fb
       InitMETAEnv

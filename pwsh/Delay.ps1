@@ -41,13 +41,13 @@ tag: windows-only
 #>
 function Main() {
   # Validate Script Dir
-  if (!(Test-Path $PwshScriptDir)) {
-    'Script Dir: $PwshScriptDir not set!'
+  if (!(Test-Path $ShellHome)) {
+    'Script Dir: $ShellHome not set!'
     return
   }
 
-  # Retrieving $PwshScriptDir from Params
-  & ($PwshScriptDir + '\bin\Delay.exe') $Time
+  # Retrieving $ShellHome from Params
+  & ($ShellHome + '\bin\Delay.exe') $Time
   # Fork in parallel need to make this one wait too
   # Start-Sleep $Time
 
@@ -62,7 +62,7 @@ function Main() {
 
   $objNotifyIcon = New-Object System.Windows.Forms.NotifyIcon
 
-  $objNotifyIcon.Icon = $PwshScriptDir + "\bin\mdelay_ps_icon.ico"
+  $objNotifyIcon.Icon = $ShellHome + "\bin\mdelay_ps_icon.ico"
   $objNotifyIcon.BalloonTipIcon = "Info"
   $objNotifyIcon.BalloonTipText = $Msg
   $objNotifyIcon.BalloonTipTitle = "Delay Timer"

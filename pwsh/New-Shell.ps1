@@ -26,12 +26,12 @@ function InvokeNewShell() {
   # For apps that are just short cut commands
   switch( $Type ) {
     'Pwsh' { # elevated
-      Push-Location $PwshScriptDir
+      Push-Location $ShellHome
       Start-Process pwsh -ArgumentList '-NoExit', '-NoLogo', 'Init-App.ps1 admin' -ErrorAction 'Stop' -Verb Runas
       Pop-Location
     }
     'dotnet' {
-      Push-Location $PwshScriptDir
+      Push-Location $ShellHome
       Start-Process pwsh -ErrorAction 'Stop' -ArgumentList '-NoExit', '-NoLogo', '-Command', `
       { `
         (Get-Host).UI.RawUI.WindowTitle = 'dotnet Shell' ; `
@@ -40,12 +40,12 @@ function InvokeNewShell() {
       Pop-Location
     }
     'SSH' {
-      Push-Location $PwshScriptDir
+      Push-Location $ShellHome
       Start-Process pwsh -ArgumentList '-NoExit', '-NoLogo', 'Init-App.ps1 openssh' -ErrorAction 'Stop'
       Pop-Location
     }
     'Node' {
-      Push-Location $PwshScriptDir
+      Push-Location $ShellHome
       Start-Process pwsh -ArgumentList '-NoExit', '-NoLogo', 'Init-App.ps1 node' -ErrorAction 'Stop'
       Pop-Location
     }
@@ -54,13 +54,13 @@ function InvokeNewShell() {
         { (Get-Host).UI.RawUI.WindowTitle = 'Qubit Powershell' }
     }
     'Cmd' { # elevated
-      Push-Location $PwshScriptDir
+      Push-Location $ShellHome
       'FYI: Utilize Run Dialog for a regular cmd process (not elevated)'
       Start-Process cmd -ArgumentList '-NoExit', '-NoLogo', 'Init-App.ps1 admin' -ErrorAction 'Stop' -Verb Runas
       Pop-Location
     }
     'Meta' { # elevated
-      Push-Location $PwshScriptDir
+      Push-Location $ShellHome
       Start-Process pwsh -ArgumentList '-NoExit', '-NoLogo', 'Init-App.ps1 meta' -ErrorAction 'Stop' -Verb Runas
       Pop-Location
     }

@@ -16,7 +16,7 @@
   Set $Env:ChocolateyInstall, ChocolateyToolsLocation
 
   Deps,
-  - $PwshScriptDir
+  - $ShellHome
   - $PFilesX64Dir
   - $PFilesX86Dir
 #>

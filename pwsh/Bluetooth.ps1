@@ -11,7 +11,7 @@
   Bluetooth.ps1 On
 
  On powershell 7 (or the core versions),
-  Powershell -NoProfile -File ($PwshScriptDir + '\Bluetooth.ps1') On
+  Powershell -NoProfile -File ($ShellHome + '\Bluetooth.ps1') On
 
 .NOTES
 **REFS**
