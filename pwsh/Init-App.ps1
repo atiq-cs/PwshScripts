@@ -129,7 +129,7 @@ function InitVariables([string] $InitType = 'resetEnvPath') {
       if ($IsWindows) {
         $Env:Path = 'C:\windows\system32;C:\windows;C:\windows\System32\Wbem;' + $Env:LOCALAPPDATA +
           '\Microsoft\WindowsApps;C:\windows\System32\WindowsPowerShell\v1.0;' + $ShellHome + ';' +
-           $PSHOME
+           $PSHOME + ';' + 'C:\WINDOWS\System32\OpenSSH\'
 
 
         # TODO: iterate over a list instead
