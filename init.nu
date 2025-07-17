@@ -47,8 +47,30 @@ cd $ShellHome
 # Put in our welcome banner
 print $"Welcome to (ansi green)Matrix Terminal(ansi reset)"
 print $"NuShell ($env.NU_VERSION) on ($nu.os-info.name) ($nu.os-info.kernel_version)"
-print ""
 
 # Porting tasks TODO
 #  InitConsoleUI
-#  resetEnvPath and app specific adjustments that are coming from sdkman ?
+#  app specific adjustments that are coming from sdkman ?
+
+# This here because on Win, env modification through scripts are not persistent across NuShells
+#  when called with 'source file.nu' or 'file.nu args'
+if ($nu.os-info.name == "windows") {
+  print --no-newline "Init for app: reset-env-path, "
+
+  $env.Path = ( [
+    ($env.SystemRoot | path join 'system32'),
+    $env.SystemRoot,
+    ($env.SystemRoot | path join 'System32' 'Wbem'),
+    ($env.LOCALAPPDATA | path join 'Microsoft' 'WindowsApps'),
+    $ShellHome,
+    ($env.SystemRoot | path join 'System32' 'OpenSSH'),
+    ($env.SystemRoot | path join 'System32' 'WindowsPowerShell' 'v1.0')
+  ])
+
+  print "git"
+  let pfiles_x64_dir = "C:\\PFiles_x64\\choco"
+  let git_path = ($pfiles_x64_dir | path join 'git' 'cmd')
+  $env.Path = ($env.Path | append $git_path)
+}
+
+print ""
