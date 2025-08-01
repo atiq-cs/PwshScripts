@@ -24,7 +24,6 @@
 # tag: linux-only
 # -----------------------------------------------------------------------------
 
-
 # Custom Command: connect_device
 # Description: Connects to a Bluetooth device by name with duplicate connection
 #   prevention
@@ -103,6 +102,11 @@ def main [
   action: string,       # 1. action to perform
   device_type?: string
 ] {
+  if $nu.os-info.name != "solaris" and $nu.os-info.name != "linux" {
+    print "This is a Linux-only script!"
+    return
+  }
+
   # Args validation
   let device_name = if $device_type == null or $device_type == "keyboard" {
     "Keychron K8"
