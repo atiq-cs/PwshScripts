@@ -41,6 +41,8 @@ $env.config.buffer_editor = "code"
 # Remove welcome msg / banner
 $env.config.show_banner = false
 
+# Additional modules
+use std/dirs
 # Custom Cmds
 cd $ShellHome
 
@@ -49,11 +51,13 @@ print $"Welcome to (ansi green)Matrix Terminal(ansi reset)"
 print $"NuShell ($env.NU_VERSION) on ($nu.os-info.name) ($nu.os-info.kernel_version)"
 
 # Porting tasks TODO
-#  InitConsoleUI
-#  app specific adjustments that are coming from sdkman ?
+# - InitConsoleUI, and probably
+# - app specific adjustments that are coming from sdkman
 
-# This here because on Win, env modification through scripts are not persistent across NuShells
-#  when called with 'source file.nu' or 'file.nu args'
+# Temporarily here for Win Init support till we figure out how to modify env vars; TODO
+# resetEnvPath and `git add` support for Win:
+#  Since env modification through scripts are not persistent across NuShells
+#   i.e., when invoked nushell scripts with 'source file.nu' or 'file.nu args'
 if ($nu.os-info.name == "windows") {
   print --no-newline "Init for app: reset-env-path, "
 
