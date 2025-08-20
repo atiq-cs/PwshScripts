@@ -212,7 +212,8 @@ function StartProcess([string] $AppName) {
       if ($oldEnvPath.Contains('dotnet')) {
         Init-App dotnet
       } else {
-        Init-App kotlin
+        # disabled temporarily for faster launch on win
+        # Init-App kotlin
       }
       Init-App git-cmd
       AddToEnvPath($PFilesX64Dir + '\VSCode\bin')

@@ -1,6 +1,7 @@
 <#
 .SYNOPSIS
 Disk checker for Linux
+TODO: add a print to enter sudo password on completion of first command
 
 .DESCRIPTION
 Automate `btrfs scrub` running for my Linux FS partitions.
