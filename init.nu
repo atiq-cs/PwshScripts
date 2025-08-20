@@ -54,10 +54,8 @@ print $"NuShell ($env.NU_VERSION) on ($nu.os-info.name) ($nu.os-info.kernel_vers
 # - InitConsoleUI, and probably
 # - app specific adjustments that are coming from sdkman
 
-# Temporarily here for Win Init support till we figure out how to modify env vars; TODO
-# resetEnvPath and `git add` support for Win:
-#  Since env modification through scripts are not persistent across NuShells
-#   i.e., when invoked nushell scripts with 'source file.nu' or 'file.nu args'
+# NuShell Env variables are scoped
+# TODO: check sourcing the init-app script here if not try use like a module
 if ($nu.os-info.name == "windows") {
   print --no-newline "Init for app: reset-env-path, "
 

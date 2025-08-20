@@ -3,6 +3,7 @@
 # .SYNOPSIS
 #   Initialize Specified Application
 # .DESCRIPTION
+#   TODO: Add Linux support (remove ~/bin when it doesn't exist)
 #   Initializes shell/env for application
 #   rewrite of pwsh/Init-App.ps1 *
 #
@@ -23,6 +24,8 @@ def main [
   # ShellHome from config.nu isn't available here on win for some reason
   let ShellHome = "D:\\Code\\shell"
   let pfiles_x64_dir = "C:\\PFiles_x64\\choco"
+
+  print $"Current env Path: ($env.Path)"
 
   match $app_name {
     'git' => {
@@ -47,4 +50,6 @@ def main [
       print $"Invalid command line argument: ($app_name)"
     }
   }
+
+  print $"Updated env Path: ($env.Path)"
 }
