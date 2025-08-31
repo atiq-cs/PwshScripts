@@ -88,7 +88,6 @@ function Main() {
 
   $PPath = [IO.Path]::GetDirectoryName($Path)
 
-
   if (-Not $Action.Equals('Remove') -And (Test-Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\$AppName.exe") -And 
   (Test-Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\$AppName.exe")) {
     "Double entries (HKLM and HKCU)!!"
@@ -108,9 +107,11 @@ function Main() {
       Remove-Item "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\$AppName.exe"
     }
   }
-  # Accessing HKCR requires admin privilege
-  # if app already is registered update its binary path (key: Default)
-  #  and update its starting in path (key: Path)
+  # Accessing HKLM requires admin privilege
+  # if app already is registered remove it from HKLM
+  #  and update its binary path (key: Default) on HKCU
+  #   and update its starting in path (key: Path)
+  # (Not sure if that's the logic, how its currently implemented though)
   elseif (Test-Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\$AppName.exe") {
     If (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::`
     GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] `
@@ -119,7 +120,7 @@ function Main() {
       return
     }
 
-      $CurrentRegPathVal = Get-ItemPropertyValue "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\$AppName.exe" -Name `(default`)
+    $CurrentRegPathVal = Get-ItemPropertyValue "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\$AppName.exe" -Name `(default`)
     if (([string]::IsNullOrEmpty($CurrentRegPathVal) -Eq $True) -Or [string]::Equals($CurrentRegPathVal, $Path) -Eq $False) {
       Set-ItemProperty "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\$AppName.exe" -Name '(Default)' -Value "$Path"
       Set-ItemProperty "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\$AppName.exe" -Name 'Path' -Value "$PPath"
