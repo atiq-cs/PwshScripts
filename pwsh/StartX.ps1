@@ -203,6 +203,17 @@ function StartProcess([string] $AppName) {
   # For Apps that modify Env
   $oldEnvPath = $Env:Path
   switch( $AppName ) {
+    'Codium' {    # verbose, non-fb, stdout only
+      # Later, retrieve these values from a dictionary
+      $AppName = 'VSCodium'
+      # not required: set in json settings file instead
+
+      Init-App git-cmd
+      AddToEnvPath($PFilesX64Dir + '\Codium\')
+
+      # Being in home dir location is not required
+      $RedirectStandardOutVal = $ShellHome + '\log\' + $AppName + '_out.log'
+    }
     'Code' {    # verbose, non-fb, stdout only
       # Later, retrieve these values from a dictionary
       $AppName = 'VSCode'
