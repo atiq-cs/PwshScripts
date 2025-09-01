@@ -54,25 +54,14 @@ print $"NuShell ($env.NU_VERSION) on ($nu.os-info.name) ($nu.os-info.kernel_vers
 # - InitConsoleUI, and probably
 # - app specific adjustments that are coming from sdkman
 
-# NuShell Env variables are scoped
-# TODO: check sourcing the init-app script here if not try use like a module
+# Nushell doesn't support persistent env.Path inside custom commands
+# Hence, utilize the method/custom command, yet, assign it here
+#  resetEnvPath and `git add` support on Win below
 if ($nu.os-info.name == "windows") {
-  print --no-newline "Init for app: reset-env-path, "
+  print ""
 
-  $env.Path = ( [
-    ($env.SystemRoot | path join 'system32'),
-    $env.SystemRoot,
-    ($env.SystemRoot | path join 'System32' 'Wbem'),
-    ($env.LOCALAPPDATA | path join 'Microsoft' 'WindowsApps'),
-    $ShellHome,
-    ($env.SystemRoot | path join 'System32' 'OpenSSH'),
-    ($env.SystemRoot | path join 'System32' 'WindowsPowerShell' 'v1.0')
-  ])
-
-  print "git"
-  let pfiles_x64_dir = "C:\\PFiles_x64\\choco"
-  let git_path = ($pfiles_x64_dir | path join 'git' 'cmd')
-  $env.Path = ($env.Path | append $git_path)
+  source ./init-app.nu
+  $env.Path = (main reset-env-path)
+  $env.Path = (main git)
 }
-
 print ""
