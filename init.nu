@@ -1,25 +1,35 @@
+#!/usr/bin/env nu
 # -----------------------------------------------------------------------------
-# Provide perpetual variables for the shell session
-# - $ShellHome
-
-# env.config.history.size is about 100k by default
-# Modify window title, ref, https://github.com/nushell/nushell/issues/2527
+# Script : init.nu
+# Desc   : Nushell configuration initialization script that sets up custom
+#          prompt with path abbreviation, editor preferences, and workspace
+#          navigation. Provides cross-platform shell home directory handling.
+# Date   : 09-05-2025
+# Dependencies: Nushell core commands, codium (text editor), std/dirs module
 #
-# Note: this script is part of config.nu
-#  not exposing $homeDir for whole session hence, initialized inside $env.PROMPT_COMMAND block
+# Usage:
+#   Source'd from config.nu during instantiation of NuShell
+#
+# Notes:
+#   - Detects OS and sets appropriate base paths (Windows: D:\Code, Unix: $HOME)  
+#   - Custom prompt shows ~* for shell directory, ~ for home directory
+#   - Disables default banner and shows custom Matrix-themed welcome
+#   - Requires codium editor to be installed and in PATH
 #
 # tag: cross-platform
 # -----------------------------------------------------------------------------
 
-# Detect OS and set $env.Home accordingly
+# Detect OS and set $ShellHome accordingly
 let $ShellHome = (if ($nu.os-info.name == "windows") { "D:\\Code" } else { $env.Home }) | path join "shell"
 
-# User added changes
+# Custom prompt with path abbreviation
 $env.PROMPT_COMMAND = {
   let user = (whoami)
   let host = (hostname)
   let pwd = (pwd)
-  # homeDir is declared here so that it is not exposed for the whole session
+  
+  # Path abbreviation logic: shell dir gets ~*, home dir gets ~
+  # `homeDir` is declared here so that it is not exposed for the whole session
   #  since we are in config.nu
   let homeDir = if ($nu.os-info.name == "windows") { "D:\\Code" } else { $env.Home }
   let path = if ($pwd | str starts-with $ShellHome) { # gotta be first line
@@ -35,20 +45,20 @@ $env.PROMPT_COMMAND = {
 
 $env.PROMPT_INDICATOR = "$ "
 
-# editor
-$env.config.buffer_editor = "code"
-
+# Set editor to VS Codium
+$env.config.buffer_editor = "codium"
 # Remove welcome msg / banner
 $env.config.show_banner = false
 
-# Additional modules
+# Load additional modules
 use std/dirs
-# Custom Cmds
-cd $ShellHome
 
-# Put in our welcome banner
+# Navigate to shell home
+cd $ShellHome
+# Show welcome
 print $"Welcome to (ansi green)Matrix Terminal(ansi reset)"
 print $"NuShell ($env.NU_VERSION) on ($nu.os-info.name) ($nu.os-info.kernel_version)"
+
 
 # Porting tasks TODO
 # - InitConsoleUI, and probably
