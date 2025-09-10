@@ -1,9 +1,7 @@
 #!/usr/bin/env nu
 # -----------------------------------------------------------------------------
 # Script : grep.nu
-# Desc   : Find text files recursively in specified directory that contain
-#          a specific string pattern. Searches through files matching the
-#          given pattern and returns paths of files containing the search term.
+# Desc   : Recursively find text files under a directory that contain a string.
 # Date   : 09-05-2025
 # Depends: Nushell core commands (glob, path, open, str)
 #
@@ -15,37 +13,49 @@
 #  - Displays search parameters before showing results
 #
 # Examples:
-#  ./grep.nu ~/WS "*.txt" "TODO"
-#  ./grep.nu . "*.{md,rst}" "nushell"
-#  ./grep.nu /var/log "*.log" "ERROR"
+#   ./grep.nu ~/WS "*.txt" "TODO"
+#   ./grep.nu . "*.{md,rst}" "nushell" -i
+#   ./grep.nu /var/log "*.log" "ERROR"
 #
 # Notes:
-#  - not the Unix tool grep, no similarity in syntax at all *
-#  - Uses glob patterns for recursive file discovery
-#  - Only searches actual files, skips directories and symlinks
-#  - Returns relative paths from the search directory for cleaner output
-#  - Case-sensitive string matching (use str downcase for case-insensitive)
+#   - Not GNU grep; syntax differs.
+#   - Uses glob recursion ("**") for discovery.
+#   - Skips directories and symlinks during globbing.
+#   - Returns relative paths from the search directory.
 #
 # tag: cross-platform
 # -----------------------------------------------------------------------------
 
 def main [
-    dir: string          # Directory to search (e.g., ~/WS)
-    pattern: string      # File pattern (e.g., "*.txt", "*.{rs,py}")
-    search_string: string # String to search for
+  dir: path
+  pattern: string
+  needle: string
+  # TODO: add case sensitivity option, ref, GPT-5 thinking model
 ] {
-    # Display search parameters
-    print $"haystack: ($dir)/($pattern) needle: ($search_string)"
+  # Validate directory exists before proceeding
+  let root = ($dir | path expand)
+  if not ($root | path exists) {
+    print $"Error: Directory does not exist: ($dir)"
+    exit 1
+  }
+  
+  if ($root | path type) != "dir" {
+    print $"Error: Path is not a directory: ($dir)"
+    exit 1
+  }
 
-    # Expand user path and build glob pattern
-    let search_path = ($dir | path expand | path join "**" | path join $pattern)
-    
-    # Find files matching pattern and containing search string
-    glob $search_path 
-    | where ($it | path type) == "file" 
-    | where ($it | open | str contains $search_string)
-    | each { |file| 
-        # Show relative path for cleaner output
-        $file | path relative-to ($dir | path expand)
+  # Display search parameters
+  print $"haystack: ($dir)/($pattern) needle: ($needle)"
+
+  # Build recursive glob pattern
+  let search_glob = ($root | path join "**" | path join $pattern)
+  
+  # Discover only regular files (no dirs, no symlinks) and search
+  glob $search_glob --no-dir --no-symlink
+  | where {|p|
+      # Read as raw bytes and decode to UTF-8; skip unreadable files
+      let content = (try { open --raw $p | decode utf-8 } catch { "" })
+      $content | str contains $needle
     }
+  | each {|p| $p | path relative-to $root }
 }
