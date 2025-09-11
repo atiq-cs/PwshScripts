@@ -77,3 +77,5 @@ print ""
 
 # WS text file init
 ./fs-helper.nu
+# ssh initialization
+source ./ssh-init.nu
