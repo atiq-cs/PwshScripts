@@ -11,7 +11,7 @@
 #   Source'd from config.nu during instantiation of NuShell
 #
 # Notes:
-#   - Detects OS and sets appropriate base paths (Windows: D:\Code, Unix: $HOME)  
+#   - Detects OS and sets appropriate base paths (Windows: D:\Code, Unix: $HOME)
 #   - Custom prompt shows ~* for shell directory, ~ for home directory
 #   - Disables default banner and shows custom Matrix-themed welcome
 #   - Requires codium editor to be installed and in PATH
@@ -59,7 +59,6 @@ cd $ShellHome
 print $"Welcome to (ansi green)Matrix Terminal(ansi reset)"
 print $"NuShell ($env.NU_VERSION) on ($nu.os-info.name) ($nu.os-info.kernel_version)"
 
-
 # Porting tasks TODO
 # - InitConsoleUI, and probably
 # - app specific adjustments that are coming from sdkman
@@ -75,3 +74,6 @@ if ($nu.os-info.name == "windows") {
   $env.Path = (main git)
 }
 print ""
+
+# WS text file init
+./fs-helper.nu
