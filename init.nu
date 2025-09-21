@@ -59,6 +59,8 @@ cd $ShellHome
 print $"Welcome to (ansi green)Matrix Terminal(ansi reset)"
 print $"NuShell ($env.NU_VERSION) on ($nu.os-info.name) ($nu.os-info.kernel_version)"
 
+print ""
+
 # Porting tasks TODO
 # - InitConsoleUI, and probably
 # - app specific adjustments that are coming from sdkman
@@ -67,15 +69,20 @@ print $"NuShell ($env.NU_VERSION) on ($nu.os-info.name) ($nu.os-info.kernel_vers
 # Hence, utilize the method/custom command, yet, assign it here
 #  resetEnvPath and `git add` support on Win below
 if ($nu.os-info.name == "windows") {
-  print ""
-
   source ./init-app.nu
   $env.Path = (main reset-env-path)
   $env.Path = (main git)
+} else {
+  # ssh initialization
+  source ./ssh-init.nu
 }
-print ""
 
-# WS text file init
-./fs-helper.nu
-# ssh initialization
-source ./ssh-init.nu
+# OS dependent inits for same instructions, differnet invocation syntax
+#  since windows nushell keeps throwing error
+if ($nu.os-info.name == "windows") {
+  # this is separately invoked on windows since it throws an error
+  .\fs-helper.nu
+} else {
+  # WS text file init
+  ./fs-helper.nu
+}
