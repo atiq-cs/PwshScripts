@@ -22,6 +22,7 @@
 #   - Uses glob recursion ("**") for discovery.
 #   - Skips directories and symlinks during globbing.
 #   - Returns relative paths from the search directory.
+#   - Native to Linux but tested on Windows 11 as well
 #
 # tag: cross-platform
 # -----------------------------------------------------------------------------
@@ -48,7 +49,14 @@ def main [
   print $"haystack: ($dir)/($pattern) needle: ($needle)"
 
   # Build recursive glob pattern
-  let search_glob = ($root | path join "**" | path join $pattern)
+  mut search_glob = ($root | path join "**" | path join $pattern)
+
+  # Win
+  if ($nu.os-info.name == "windows") {
+    $search_glob = ($search_glob | str replace -a '\' '/')
+  }
+  # to debug on Windows
+  # print $"DEBUG: Using glob pattern: ($search_glob)"
   
   # Discover only regular files (no dirs, no symlinks) and search
   glob $search_glob --no-dir --no-symlink
