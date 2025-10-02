@@ -15,6 +15,8 @@
 #   - Custom prompt shows ~* for shell directory, ~ for home directory
 #   - Disables default banner and shows custom Matrix-themed welcome
 #   - Requires codium editor to be installed and in PATH
+#  on Windows
+#   - powershell is removed from env.PATH
 #
 # tag: cross-platform
 # -----------------------------------------------------------------------------
@@ -72,10 +74,15 @@ if ($nu.os-info.name == "windows") {
   source ./init-app.nu
   $env.Path = (main reset-env-path)
   $env.Path = (main git)
+  source ./win/init.nu
 } else {
   # ssh initialization
   source ./ssh-init.nu
 }
+
+# NuShell vars don't persist when scripts like .\fs-helper.nu are invoked on Win
+#  However, env vars seem to persist
+# print $"Env Debug: ($env.PFilesX64Dir)"
 
 # OS dependent inits for same instructions, differnet invocation syntax
 #  since windows nushell keeps throwing error

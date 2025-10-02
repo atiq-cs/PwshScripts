@@ -6,7 +6,7 @@
 #      and set group write permissions on both the directory and the file.
 #
 # Date   : 08-08-2025
-# Deps   : Nushell core commands (date, path, mkdir, touch, chmod)
+# Deps   : Nushell core commands (date, path, mkdir, touch, chmod), pwsh on Win
 #
 # Usage:
 # ./fs-helper.nu
@@ -38,8 +38,14 @@ def main [] {
   #  on Linux use ~/ws
   # case sensitive comparison string: windows not Windows!
   if $os_name == "windows" {
-    $env.Home = (powershell -NoProfile -Command '[Environment]::GetFolderPath("MyDocuments")')
+    # let ps_path = ($env.SystemRoot | path join 'System32' 'WindowsPowerShell' 'v1.0')
+    let ps_path = ($env.PFilesX64Dir | path join "pwsh")
+    
+    $env.Home = (with-env {Path: ($env.Path | append $ps_path)} {
+      pwsh -NoProfile -Command '[Environment]::GetFolderPath("MyDocuments")'
+    })
   }
+
   let ws_dir = ($env.HOME | path join 'ws')
 
   # Compute today's MM-DD and target file path

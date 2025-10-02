@@ -38,7 +38,7 @@ def main [
         ($env.SystemRoot | path join 'System32' 'Wbem'),
         ($env.LOCALAPPDATA | path join 'Microsoft' 'WindowsApps'),
         ($env.SystemRoot | path join 'System32' 'OpenSSH'),
-        ($env.SystemRoot | path join 'System32' 'WindowsPowerShell' 'v1.0'),
+        # ($env.SystemRoot | path join 'System32' 'WindowsPowerShell' 'v1.0'),
         $ShellHome
       ]
     }

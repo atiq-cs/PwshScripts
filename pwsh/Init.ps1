@@ -40,7 +40,7 @@ function UpdateRepo() {
 function InitConsoleUI() {
   # $(if ($PHOST_TYPE -Eq 'office' ) { "Qubit Terminal" } else { "Matrix Terminal" })
   # doesn't work on Linux, TODO later
-  (Get-Host).UI.RawUI.WindowTitle = 'Matrix Terminal'
+  (Get-Host).UI.RawUI.WindowTitle = 'Legacy Terminal'
 }
 
 # Brief help
