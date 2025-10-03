@@ -26,7 +26,7 @@
 #   - State forms: <form>.pdf -> <form>_orig.pdf backup
 #
 # Notes:
-#   - Early version ported from PowerShell script
+#   - Initial port of PowerShell script: 'pwsh/TaxTool.ps1'
 #   - State form logic not fully tested yet
 #   - Additional conditional logic to be added later
 #   - Uses absolute paths, avoids push/pop directory operations
