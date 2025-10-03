@@ -63,6 +63,12 @@ print $"NuShell ($env.NU_VERSION) on ($nu.os-info.name) ($nu.os-info.kernel_vers
 
 print ""
 
+source ./init-app.nu
+# print $"Path: (main reset-env-path)"
+$env.Path = (main reset-env-path)
+$env.Path = (main git)
+
+
 # Porting tasks TODO
 # - InitConsoleUI, and probably
 # - app specific adjustments that are coming from sdkman
@@ -71,9 +77,6 @@ print ""
 # Hence, utilize the method/custom command, yet, assign it here
 #  resetEnvPath and `git add` support on Win below
 if ($nu.os-info.name == "windows") {
-  source ./init-app.nu
-  $env.Path = (main reset-env-path)
-  $env.Path = (main git)
   source ./win/init.nu
 } else {
   # ssh initialization
@@ -87,6 +90,8 @@ if ($nu.os-info.name == "windows") {
 # OS dependent inits for same instructions, differnet invocation syntax
 #  since windows nushell keeps throwing error
 if ($nu.os-info.name == "windows") {
+  # TODO: try following on windows, if it works might as well generalize
+  # nu ./fs-helper.nu
   # this is separately invoked on windows since it throws an error
   .\fs-helper.nu
 } else {
