@@ -39,6 +39,7 @@ def main [
         ($env.LOCALAPPDATA | path join 'Microsoft' 'WindowsApps'),
         ($env.SystemRoot | path join 'System32' 'OpenSSH'),
         # ($env.SystemRoot | path join 'System32' 'WindowsPowerShell' 'v1.0'),
+        "C:\\PFiles_x64\\bin",  # /usr/bin emulation
         $ShellHome
       ]
     }
