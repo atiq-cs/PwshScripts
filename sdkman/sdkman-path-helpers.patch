@@ -1,0 +1,11 @@
+--- /home/atiq/.local/sdkman/src/sdkman-path-helpers.sh.orig	2025-10-04 10:25:37.248882252 -0700
++++ /home/atiq/.local/sdkman/src/sdkman-path-helpers.sh	2025-10-04 10:26:02.673743180 -0700
+@@ -70,7 +70,7 @@
+ 
+ 	candidate_dir="$1"
+ 	candidate_bin_dir=$(__sdkman_determine_candidate_bin_dir "$candidate_dir")
+-	echo "$PATH" | grep -q "$candidate_dir" || PATH="${candidate_bin_dir}:${PATH}"
++	echo "$PATH" | grep -q "$candidate_dir" || PATH="${PATH}:${candidate_bin_dir}"
+ 	unset CANDIDATE_BIN_DIR
+ }
+ 
