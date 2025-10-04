@@ -47,10 +47,7 @@ def main [
     'reset-env-path' => {
       # Reset PATH to platform-specific default
       if ($nu.os-info.name != "windows") {
-        # backup of /etc/environment, pop_os 10-03-2025
-        # $ cat /etc/environment
-        # PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin"
-
+        # backup of /etc/environment in configs dir
         # Expected default system PATH for comparison
         let expected_system_path = [
           "/usr/bin",
