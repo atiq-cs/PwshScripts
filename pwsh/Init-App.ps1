@@ -66,7 +66,7 @@ function AddKTAppToEnv([string] $App = '', [string] $PFilesX64PTDir = '', [strin
 }
 
 function RemoveFromEnvPath([string] $path = '') {
-  if (-not [string]::IsNullOrEmpty($path)) {
+  if ([string]::IsNullOrEmpty($path)) {
     Write-Host "Empty string: $path"
     return
   }
