@@ -25,39 +25,37 @@
 #   - Target apps: git, choco, python (ML) etc. more in future
 #------------------------------------------------------------------------------
 
-def main [
+def --env init-app [
   app_name: string = 'reset-env-path'   # Name of app for which to init
 ] {
   print $"Init for app: ($app_name)"
 
   let pfiles_x64_dir = "C:\\PFiles_x64\\choco"
-  let prior_env_path = $env.Path
 
   match $app_name {
-    'git' => {
+    # 'git' => managed via /usr/bin emulation
       # not required in Unix, return default
-      if ($nu.os-info.name != "windows") {
-        $prior_env_path
-      } else {
-        let git_path = ($pfiles_x64_dir | path join 'git' 'cmd')
-        let path_with_git = ($prior_env_path | append $git_path)
-        $path_with_git
-      }
-    }
+    #   if ($nu.os-info.name != "windows") {
+    #     # No changes needed for Unix
+    #   } else {
+    #     let git_path = ($pfiles_x64_dir | path join 'git' 'cmd')
+    #     $env.Path = ($env.Path | append $git_path)
+    #   }
+    # }
     'reset-env-path' => {
       # Reset PATH to platform-specific default
+      # Expected default system PATH for comparison
+      mut expected_system_path = [
+        "/usr/bin",
+        "/usr/sbin",
+        "/usr/local/bin",
+        "/home/atiq/.local/sdkman/candidates/kotlin/current/bin",
+        "/home/atiq/.local/sdkman/candidates/java/current/bin",
+        "/home/atiq/.local/sdkman/candidates/gradle/current/bin"
+      ]
+
       if ($nu.os-info.name != "windows") {
         # backup of /etc/environment in configs dir
-        # Expected default system PATH for comparison
-        let expected_system_path = [
-          "/usr/bin",
-          "/usr/sbin",
-          "/usr/local/bin",
-          "/home/atiq/.local/sdkman/candidates/kotlin/current/bin",
-          "/home/atiq/.local/sdkman/candidates/java/current/bin",
-          "/home/atiq/.local/sdkman/candidates/gradle/current/bin"
-        ]
-        
         # Check if current PATH differs from expected
         if ($env.Path != $expected_system_path) {
           print "WARN: System environment PATH has changed from expected defaults:"
@@ -66,25 +64,28 @@ def main [
           print $"Expected: ($expected_system_path)"
           print ""
         }
-
-        # return standard system path with our shell's dir appended
-        ($expected_system_path | append $ShellHome)
       } else {
-        [
+        $expected_system_path = [
           ($env.SystemRoot | path join 'system32'),
           $env.SystemRoot,
           ($env.SystemRoot | path join 'System32' 'Wbem'),
           ($env.LOCALAPPDATA | path join 'Microsoft' 'WindowsApps'),
           ($env.SystemRoot | path join 'System32' 'OpenSSH'),
           # ($env.SystemRoot | path join 'System32' 'WindowsPowerShell' 'v1.0'),
-          "C:\\PFiles_x64\\bin",  # /usr/bin emulation
-          $ShellHome
+          "C:\\PFiles_x64\\bin"  # /usr/bin emulation
         ]
       }
+
+      # Assign to $env.Path instead of returning
+      $env.Path = ($expected_system_path | append $ShellHome)
     }
     _ => {
       print $"Invalid command line argument: ($app_name)"
-      $prior_env_path
+      # No change to Path for invalid arguments
     }
   }
 }
+
+
+# This runs when sourced
+init-app 'reset-env-path'

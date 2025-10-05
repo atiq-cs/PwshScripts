@@ -57,25 +57,18 @@ use std/dirs
 
 # Navigate to shell home
 cd $ShellHome
+
 # Show welcome
 print $"Welcome to (ansi green)Matrix Terminal(ansi reset)"
 print $"NuShell ($env.NU_VERSION) on ($nu.os-info.name) ($nu.os-info.kernel_version)"
-
 print ""
 
+# Seems to have some sort support of persistent env.Path inside custom commands
 source ./init-app.nu
-# print $"Path: (main reset-env-path)"
-$env.Path = (main reset-env-path)
-$env.Path = (main git)
-
 
 # Porting tasks TODO
 # - InitConsoleUI, and probably
-# - app specific adjustments that are coming from sdkman
 
-# Nushell doesn't support persistent env.Path inside custom commands
-# Hence, utilize the method/custom command, yet, assign it here
-#  resetEnvPath and `git add` support on Win below
 if ($nu.os-info.name == "windows") {
   source ./win/init.nu
 } else {
@@ -83,18 +76,4 @@ if ($nu.os-info.name == "windows") {
   source ./ssh-init.nu
 }
 
-# NuShell vars don't persist when scripts like .\fs-helper.nu are invoked on Win
-#  However, env vars seem to persist
-# print $"Env Debug: ($env.PFilesX64Dir)"
-
-# OS dependent inits for same instructions, differnet invocation syntax
-#  since windows nushell keeps throwing error
-if ($nu.os-info.name == "windows") {
-  # TODO: try following on windows, if it works might as well generalize
-  # nu ./fs-helper.nu
-  # this is separately invoked on windows since it throws an error
-  .\fs-helper.nu
-} else {
-  # WS text file init
-  ./fs-helper.nu
-}
+fs-helper.nu
