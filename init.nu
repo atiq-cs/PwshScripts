@@ -61,7 +61,6 @@ cd $ShellHome
 # Show welcome
 print $"Welcome to (ansi green)Matrix Terminal(ansi reset)"
 print $"NuShell ($env.NU_VERSION) on ($nu.os-info.name) ($nu.os-info.kernel_version)"
-print ""
 
 # Seems to have some sort support of persistent env.Path inside custom commands
 source ./init-app.nu
@@ -77,3 +76,5 @@ if ($nu.os-info.name == "windows") {
 }
 
 fs-helper.nu
+
+print ""

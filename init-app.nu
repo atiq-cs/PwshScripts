@@ -28,8 +28,6 @@
 def --env init-app [
   app_name: string = 'reset-env-path'   # Name of app for which to init
 ] {
-  print $"Init for app: ($app_name)"
-
   let pfiles_x64_dir = "C:\\PFiles_x64\\choco"
 
   match $app_name {
@@ -78,6 +76,7 @@ def --env init-app [
 
       # Assign to $env.Path instead of returning
       $env.Path = ($expected_system_path | append $ShellHome)
+      print "Init: env.Path"
     }
     _ => {
       print $"Invalid command line argument: ($app_name)"
