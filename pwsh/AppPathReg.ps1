@@ -69,6 +69,8 @@ function Main() {
   if ($Action.Equals('Update')) {
     # Is64Bit doesn't matter when Path is not relative to $PFilesDir
     # Add program files prefix for relative paths
+    #  to support commands like this
+    #    AppPathReg Update Signal 'Signal\Signal.exe'
     if ( !$Path.Contains(":\PFiles_x") ) {
       $PFilesDir = $( if ($Is64Bit) { $PFilesX64Dir } else { $PFilesX86Dir } )
       $Path = $PFilesDir + '\' + $Path
