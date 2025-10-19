@@ -1,4 +1,4 @@
---- /home/atiq/.local/sdkman/bin/sdkman-init.sh.original	2025-10-04 10:18:45.148851805 -0700
+--- /home/atiq/.local/sdkman/bin/sdkman-init.sh.bak	2025-10-04 10:18:45.148851805 -0700
 +++ /home/atiq/.local/sdkman/bin/sdkman-init.sh	2025-10-04 10:23:08.878191193 -0700
 @@ -113,14 +113,16 @@
  

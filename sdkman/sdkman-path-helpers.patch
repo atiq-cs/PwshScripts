@@ -1,4 +1,4 @@
---- /home/atiq/.local/sdkman/src/sdkman-path-helpers.sh.orig	2025-10-04 10:25:37.248882252 -0700
+--- /home/atiq/.local/sdkman/src/sdkman-path-helpers.sh.bak	2025-10-04 10:25:37.248882252 -0700
 +++ /home/atiq/.local/sdkman/src/sdkman-path-helpers.sh	2025-10-04 10:26:02.673743180 -0700
 @@ -70,7 +70,7 @@
  
