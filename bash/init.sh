@@ -15,11 +15,14 @@
 #   - HISTSIZE: 16384 commands in memory (2^14)
 #   - HISTFILESIZE: unlimited on disk
 #   - HISTTIMEFORMAT: timestamps in 'YYYY-MM-DD HH:MM:SS' format
+#   - HISTCONTROL: erase all duplicate commands, ignore space-prefixed commands
 #
 # Notes:
 #   - Backup .bash_history before modifying history variables
 #   - histappend prevents history overwrite in multi-session scenarios
 #   - cd command changes default directory on shell start
+#   - Perp ref: https://www.perplexity.ai/search/pop-os-bash-shell-init-
+#               related-HYFBCpIMTTK6aD_NmtQIXQ#1
 #
 # tag: pop-os, bash
 # -----------------------------------------------------------------------------
@@ -31,6 +34,9 @@ stty -ixon
 export HISTSIZE=16384
 export HISTFILESIZE=
 export HISTTIMEFORMAT='%F %T '
+# Remove all previous occurrences of duplicate commands; ignore commands starting
+#  with space
+export HISTCONTROL=erasedups:ignorespace
 
 # Append to history file instead of overwriting (multi-session safety)
 shopt -s histappend
