@@ -9,12 +9,12 @@
 # Deps   : Nushell core commands (hash sha256, path), wget2, gpg
 #
 # Usage:
-# ./get-linux-image.nu pop_os 24.04 ~/soft/images
+# ./live-media-to-disk.nu pop_os 24.04 ~/soft/images
 #  - Downloads Pop!_OS 24.04 beta with default NVIDIA variant
 #  - Creates pop-os_24.04_amd64_nvidia_<build>.iso in specified directory
 #  - Verifies SHA256 checksum and GPG signature
 #
-# ./get-linux-image.nu pop_os 24.04 ~/soft/images --variant amd64
+# ./live-media-to-disk.nu pop_os 24.04 ~/soft/images --variant amd64
 #  - Downloads Intel/AMD variant instead of default NVIDIA
 #
 # Notes:
