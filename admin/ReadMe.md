@@ -1,6 +1,11 @@
 **Linux Administration**  
 
-Generic Linux Adminstration scripts are in this dir.
+*Generic Linux (mostly pop_os) Adminstration scripts are in this dir.*
 
-Listing
-- pop_os beta image downloader
+
+**Listing**  
+- linux / pop_os beta image downloader
+- root with zfs
+ - create gpt parts
+ - the setup / transfer to zfs
+ - post install
