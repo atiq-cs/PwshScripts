@@ -7,5 +7,6 @@
 - linux / pop_os beta image downloader
 - root with zfs
  - create gpt parts
+ - create zfs pool and datasets
  - the setup / transfer to zfs
  - post install
