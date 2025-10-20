@@ -24,6 +24,9 @@
 #   - Perp ref: https://www.perplexity.ai/search/pop-os-bash-shell-init-
 #               related-HYFBCpIMTTK6aD_NmtQIXQ#1
 #
+#   following line is added at the end of .bashrc
+#     source ~/shell/bash/init.sh
+#
 # tag: pop-os, bash
 # -----------------------------------------------------------------------------
 
@@ -40,6 +43,17 @@ export HISTCONTROL=erasedups:ignorespace
 
 # Append to history file instead of overwriting (multi-session safety)
 shopt -s histappend
+
+
+### due to above following lines are removed from .bashrc
+# append to the history file, don't overwrite it
+# shopt -s histappend
+
+# for setting history length see HISTSIZE and HISTFILESIZE in bash(1)
+# HISTSIZE=1000
+# HISTFILESIZE=2000
+### end ##
+
 
 # Set vim as default editor for terminal applications
 export EDITOR=vim
