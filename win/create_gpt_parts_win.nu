@@ -42,6 +42,9 @@ sudo parted /dev/nvme0n1 set 5 msftdata on
 # Windows Recovery Environment - 768 MiB, ending sector prevents gaps
 sudo parted --align optimal /dev/nvme0n1 'mkpart "Windows Recovery Env." 975986MiB 2000390831s'
 sudo parted /dev/nvme0n1 set 6 diag on
+sudo sgdisk --typecode=6:de94bba4-06d1-4d40-a16a-bfd50179d6ac /dev/nvme0n1
+# also need to format it using ntfs (do it from diskpart, so need to install more
+#  windows stuff on my clean Unix system)
 
 # Data partition - exFAT, uses remaining space with precise ending sector
 sudo parted /dev/nvme0n1 mkpart Data 417GiB 1998819327s
