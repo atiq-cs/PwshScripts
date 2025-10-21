@@ -1,216 +1,277 @@
 #!/usr/bin/env nu
 # -----------------------------------------------------------------------------
-# Script : Pop!_OS Beta Image Downloader
-# Desc   : Downloads latest Pop!_OS beta ISO image and verifies SHA256 checksum
-#          Supports both NVIDIA and Intel/AMD variants with automatic URL construction
-#          and checksum verification from official SHA256SUMS and GPG signature
-#          Optionally writes the ISO to a target USB device using selected writer tool
-#
-# Date   : 10-20-2025
-# Deps   : Nushell core commands (hash sha256, path), wget2, gpg, dd, mkusb-nox
+# Script : Live Media Writer
+# Desc   : Download, verify, and write bootable images for OpenIndiana,
+#          OmniOS and, Pop!_OS
+# Date   : 10-21-2025
+# Deps   : nushell, wget2, gpg, dd, mkusb-nox
 #
 # Usage:
-# ./live-media-to-disk.nu pop_os 24.04 ~/soft/images /dev/sda
-#  - Downloads, verifies, and writes ISO using default writer tool (mkusb)
-#
-# ./live-media-to-disk.nu pop_os 24.04 ~/soft/images /dev/sda --writer-tool mkusb
-#  - Same as above, explicitly uses mkusb
-#
-# ./live-media-to-disk.nu pop_os 24.04 ~/soft/images /dev/sda --writer-tool dd
-#  - Downloads, verifies, and writes ISO using dd
+#   ./live-media-to-disk.nu openindiana beta --gui ~/images /dev/sdX
+#   ./live-media-to-disk.nu omnios lts      ~/images /dev/sdX
+#   ./live-media-to-disk.nu omnios bloody   ~/images /dev/sdX
+#   ./live-media-to-disk.nu pop_os stable   ~/images /dev/sdX
+#     [--variant nvidia|amd64]
+#   ./live-media-to-disk.nu pop_os beta     ~/images /dev/sdX
+#     [--variant nvidia|amd64]
 #
 # Notes:
-#  - NVIDIA variant is default (RTX 16xx/20xx/30xx/40xx series and newer)
-#  - amd64 variant for Intel/AMD graphics or GTX 1060 and older
-#  - Build number auto-detected from latest beta release
-#  - Verifies both SHA256 hash and GPG signature before writing
-#  - mkusb may be slower than dd but is safer and interactive
-#
-# tag: nushell, linux, sha256, gpg, security, usb
+#   - Channels:OI {stable, beta→test}; OmniOS {lts, stable, bloody};
+#     Pop!_OS {stable=22.04, beta=24.04}.
+#   - Verifies SHA-256 for all; also verifies GPG for Pop!_OS before write.
+#   - Writer defaults: dd for illumos; mkusb for Pop!_OS; exact dd command is
+#     printed before execution.
+#   - dd block size auto-selects by image size: > 1 GiB → bs=4M, else bs=1M,
+#     per GNU dd guidance on block sizes.
 # -----------------------------------------------------------------------------
 
-def build_pop_os_url [version: string, variant: string, build: string] {
-  let url_variant = (if $variant == "amd64" { "intel" } else { $variant })
-  $"https://iso.pop-os.org/($version)/amd64/($url_variant)/($build)/pop-os_($version)_amd64_($url_variant)_($build).iso"
+# Channel definitions - single source of truth
+const CHANNELS = {
+  pop_os: {
+    stable: { version: "22.04", build: "58", path: "22.04" }
+    beta: { version: "24.04", build: "20", path: "24.04" }
+  }
+  openindiana: {
+    stable: { version: "20250606", path: "20250606" }
+    beta: { version: "20251011", path: "test" }
+  }
+  omnios: {
+    lts: { version: "r151054r", path: "stable" }
+    stable: { version: "r151054", path: "stable" }
+    bloody: { version: "20250902", path: "bloody" }
+  }
 }
 
-def build_checksum_url [version: string, variant: string, build: string] {
-  let url_variant = (if $variant == "amd64" { "intel" } else { $variant })
-  $"https://iso.pop-os.org/($version)/amd64/($url_variant)/($build)/SHA256SUMS"
+# Build image URL from channel config
+def build-url [distro: string, channel_info: record, variant: string, gui: bool] {
+  match $distro {
+    "pop_os" => {
+      let url_var = (if $variant == "amd64" { "intel" } else { $variant })
+      let v = $channel_info.version
+      let b = $channel_info.build
+      $"https://iso.pop-os.org/($v)/amd64/($url_var)/($b)/pop-os_($v)_amd64_($url_var)_($b).iso"
+    }
+    "openindiana" => {
+      let ed = (if $gui { "gui" } else { "text" })
+      let v = $channel_info.version
+      if $channel_info.path == "test" {
+        $"https://dlc.openindiana.org/isos/hipster/test/OI-hipster-($ed)-($v).usb"
+      } else {
+        $"https://dlc.openindiana.org/isos/hipster/($v)/OI-hipster-($ed)-($v).usb"
+      }
+    }
+    "omnios" => {
+      let v = $channel_info.version
+      let p = $channel_info.path
+      if $p == "bloody" {
+        $"https://downloads.omnios.org/media/bloody/omnios-bloody-($v).usb-dd"
+      } else {
+        $"https://downloads.omnios.org/media/stable/omnios-($v).usb-dd"
+      }
+    }
+  }
 }
 
-def build_gpg_url [version: string, variant: string, build: string] {
-  let url_variant = (if $variant == "amd64" { "intel" } else { $variant })
-  $"https://iso.pop-os.org/($version)/amd64/($url_variant)/($build)/SHA256SUMS.gpg"
+# Build checksum URL
+def build-checksum-url [distro: string, channel_info: record, variant: string, image_url: string] {
+  match $distro {
+    "pop_os" => {
+      let url_var = (if $variant == "amd64" { "intel" } else { $variant })
+      let v = $channel_info.version
+      let b = $channel_info.build
+      $"https://iso.pop-os.org/($v)/amd64/($url_var)/($b)/SHA256SUMS"
+    }
+    "openindiana" => $"($image_url).sha256sum"
+    "omnios" => $"($image_url).sha256"
+  }
 }
 
-def import_pop_os_gpg_key [] {
+# Download file if not present
+def download-file [url: string, output_path: string] {
+  let filename = ($url | split row "/" | last)
+  if ($output_path | path exists) {
+    print $"File ($filename) already exists, skipping download."
+  } else {
+    print $"Downloading ($filename)..."
+    wget2 --directory-prefix ($output_path | path dirname) $url
+  }
+}
+
+# Verify SHA-256
+def verify-checksum [filepath: string, checksum_content: string, distro: string, filename: string] {
+  print "Verifying SHA-256 checksum..."
+  let file_hash = (open $filepath | hash sha256)
+  let expected = (
+    if $distro == "pop_os" {
+      $checksum_content | lines | where $it =~ $filename | first | split row " " | first
+    } else {
+      $checksum_content | lines | first | split row " " | first
+    }
+  )
+  
+  if ($expected | is-empty) {
+    error make { msg: $"Could not find checksum for ($filename)" }
+  }
+  
+  if $file_hash == $expected {
+    print $"[OK] SHA-256 verified for ($filename)"
+  } else {
+    error make { msg: $"SHA-256 mismatch: got '($file_hash)' expected '($expected)'" }
+  }
+}
+
+# Verify GPG (Pop!_OS only)
+def verify-gpg [checksum_file: string, gpg_file: string] {
+  print "Verifying GPG signature..."
   let key_id = "204DD8AEC33A7AFF"
   let key_check = (gpg --list-keys $key_id | complete)
+  
   if $key_check.exit_code != 0 {
     print "Importing Pop!_OS GPG signing key..."
     gpg --keyserver keyserver.ubuntu.com --recv-keys $key_id
-  } else {
-    print "Pop!_OS GPG key already imported."
+  }
+  
+  let gpg_result = (gpg --verify $gpg_file $checksum_file | complete)
+  if $gpg_result.exit_code != 0 {
+    error make { msg: $"GPG verification failed:\n($gpg_result.stderr)" }
+  }
+  print "[OK] GPG signature verified"
+}
+
+# Write image to device
+def write-image [filepath: string, device: string, tool: string, distro: string] {
+  if not ($device | path exists) {
+    error make { msg: $"Device ($device) does not exist" }
+  }
+  
+  print $"\nAbout to write to ($device) using ($tool)..."
+  print "This will PERMANENTLY DESTROY all data on the target device!"
+  print "\nVerify device with: lsblk\n"
+  
+  let confirm = (input "Type 'yes' to continue: ")
+  if $confirm != "yes" {
+    print "\nCancelled."
+    return
+  }
+  
+  match $tool {
+    "dd" => {
+      # Compute a size-aware block size:
+      # - Use 4 MiB for images > 1 GiB
+      # - Otherwise use 1 MiB
+      let file_size = (ls $filepath | first | get size)
+      let bs = (if $file_size > 1GiB { "4M" } else { "1M" })
+
+      # Build, show, and execute the exact dd command
+      let dd_cmd = $"sudo dd bs=($bs) if=($filepath) of=($device) status=progress conv=fsync"
+      print $"\nExecuting: ($dd_cmd)\n"
+      bash -c $dd_cmd
+
+      print "\n[OK] Write complete. Syncing filesystem..."
+      sync
+      print "[OK] Device ready to boot."
+    }
+    "mkusb" => {
+      print "\nLaunching mkusb-nox..."
+      sudo mkusb-nox $filepath all
+    }
   }
 }
 
-def get_latest_build [version: string, variant: string] {
-  "20"
-}
-
+# Main
 def main [
-  distro_name: string,               # Must be "pop_os"
-  release: string,                   # Release version like "24.04"
-  output_dir: string,                # Output directory for downloaded ISO
-  target_device?: string,            # Optional, e.g., /dev/sdX
-  --variant: string = "nvidia",      # "nvidia" or "amd64"
-  --download-only,                   # Download and verify only
-  --writer-tool: string = "mkusb"    # Tool to write ISO ("mkusb" or "dd")
+  distro_name: string          # pop_os, openindiana/oi, omnios
+  channel: string              # stable/beta (Pop/OI), lts/stable/bloody (OmniOS)
+  output_dir: string           # download directory
+  target_device?: string       # optional /dev/sdX
+  --variant: string = "nvidia" # Pop!_OS: nvidia or amd64
+  --gui                        # OpenIndiana GUI edition
+  --download-only              # skip write stage
+  --writer-tool: string = ""   # dd or mkusb
 ] {
-  if $distro_name != "pop_os" {
-    error make { msg: $"Invalid distro_name: ($distro_name). Only 'pop_os' is supported." }
-  }
-
-  if $variant not-in ["nvidia", "amd64"] {
-    error make { msg: $"Invalid variant: ($variant). Valid values: nvidia, amd64." }
-  }
-
+  # Normalize distro
+  let distro = (
+    match ($distro_name | str downcase) {
+      "pop_os" => "pop_os"
+      "openindiana" | "oi" => "openindiana"
+      "omnios" => "omnios"
+      _ => { error make { msg: $"Invalid distro: ($distro_name). Use: pop_os, openindiana, oi, omnios" } }
+    }
+  )
+  
   if not ($output_dir | path exists) {
-    error make { msg: $"Directory ($output_dir) does not exist." }
+    error make { msg: $"Directory ($output_dir) does not exist" }
   }
-
-  if $writer_tool not-in ["mkusb", "dd"] {
-    error make { msg: $"Invalid writer-tool: ($writer_tool). Valid values: mkusb, dd." }
+  
+  # Get channel config
+  let channel_lower = ($channel | str downcase)
+  let channel_info = ($CHANNELS | get $distro | get --optional $channel_lower)
+  
+  if ($channel_info | is-empty) {
+    let valid = ($CHANNELS | get $distro | columns | str join ", ")
+    error make { msg: $"Invalid channel '($channel)' for ($distro). Valid: ($valid)" }
   }
-
-  let build = (get_latest_build $release $variant)
-
-  let image_url = (build_pop_os_url $release $variant $build)
-  let checksum_url = (build_checksum_url $release $variant $build)
-  let gpg_url = (build_gpg_url $release $variant $build)
-
+  
+  # Default writer: dd for illumos, mkusb for Pop!_OS
+  let tool = (if $writer_tool == "" { if $distro == "pop_os" { "mkusb" } else { "dd" } } else { $writer_tool })
+  if $tool not-in ["dd", "mkusb"] {
+    error make { msg: $"Invalid writer-tool: ($tool). Valid: dd, mkusb" }
+  }
+  
+  if $distro == "pop_os" and $variant not-in ["nvidia", "amd64"] {
+    error make { msg: $"Invalid variant: ($variant). Valid: nvidia, amd64" }
+  }
+  
+  # Build URLs
+  let image_url = (build-url $distro $channel_info $variant $gui)
+  let checksum_url = (build-checksum-url $distro $channel_info $variant $image_url)
+  
   let filename = ($image_url | split row "/" | last)
   let filepath = ($output_dir | path join $filename)
-  let checksum_file = ($output_dir | path join "SHA256SUMS")
-  let gpg_file = ($output_dir | path join "SHA256SUMS.gpg")
-
-  print $"ISO URL: ($image_url)"
-  print ""
-
-  if ($filepath | path exists) {
-    print $"File ($filename) already exists, skipping download."
-  } else {
-    print $"Downloading ($filename) from Pop!_OS beta servers..."
-    wget2 --directory-prefix $output_dir $image_url
-  }
-
-  print "Downloading SHA256SUMS file..."
-  wget2 --output-document $checksum_file $checksum_url
-
-  print "Downloading SHA256SUMS.gpg file..."
-  wget2 --output-document $gpg_file $gpg_url
-
-  print ""
-  print "=== Verification Stage ==="
-  print ""
-
-  print "Step 1: Verifying SHA256 hash of the ISO..."
-  let checksum_content = (open $checksum_file)
-  let expected = ($checksum_content | lines | where $it =~ $filename | first | split row " " | first)
-  if ($expected | is-empty) {
-    error make { msg: $"Could not find checksum for ($filename) in SHA256SUMS file" }
-  }
-  let file_hash = (open $filepath | hash sha256)
-  if $file_hash == $expected {
-    print $"[OK] SHA256 verified for ($filename)"
-  } else {
-    error make { msg: $"SHA256 mismatch: got '($file_hash)' expected '($expected)'" }
-  }
-
-  print ""
-  print "Step 2: Verifying GPG signature..."
-  import_pop_os_gpg_key
-  let gpg_result = (gpg --verify $gpg_file $checksum_file | complete)
-  if $gpg_result.exit_code == 0 {
-    print "[OK] GPG signature verified"
-  } else {
-    error make { msg: $"GPG signature verification failed:\n($gpg_result.stderr)" }
-  }
-
-  print ""
-  print "=== All Verifications Passed ==="
-  print $"File ready at: ($filepath)"
-
-  if (not $download_only) {
-    if ($target_device | is-empty) {
-      print ""
-      print "No target device provided; skipping write stage."
-      print "Tip: provide a device like /dev/sdX as the final argument to write."
+  
+  print $"Image URL: ($image_url)\n"
+  
+  # Download
+  download-file $image_url $filepath
+  
+  # Get checksum
+  let checksum_content = (
+    if $distro in ["openindiana", "omnios"] {
+      http get --raw $checksum_url | decode utf-8
     } else {
-      if not ($target_device | path exists) {
-        error make { msg: $"Target device ($target_device) does not exist under /dev" }
-      }
-
-      print ""
-      print $"About to write ISO to target device ($target_device) using ($writer_tool)..."
-      print "This will PERMANENTLY DESTROY all data on the target device!"
-      print ""
-      print "Verify target device carefully with: lsblk"
-      print ""
-
-      let confirm = (input "Type 'yes' to continue or anything else to cancel: ")
-
-      if $confirm != "yes" {
-        print "\nWrite cancelled by user."
-        return
-      }
-
-      match $writer_tool {
-        "mkusb" => {
-          print $"\nLaunching mkusb-nox with ($filepath)..."
-          print "Please select the target device manually in mkusb interface."
-          print "To write to ($target_device), be sure to select it carefully."
-
-          # Run mkusb-nox normally; cannot specify device via CLI
-          sudo mkusb-nox $filepath all
-        }
-        "dd" => {
-          print $"\nWriting with dd: bs=4M if=($filepath) of=($target_device)...\n"
-          # Use bash -c for proper variable expansion with sudo
-          bash -c $"sudo dd bs=4M if=($filepath) of=($target_device) status=progress conv=fsync"
-
-          print "\n[OK] Write complete. Syncing filesystem..."
-          sync
-
-          print "[OK] USB device ready to boot."
-          print $"You may now safely remove ($target_device)."
-        }
-        _ => {
-          error make { msg: $"Unsupported writer-tool: ($writer_tool)" }
-        }
-      }
+      let csum_file = ($output_dir | path join "SHA256SUMS")
+      download-file $checksum_url $csum_file
+      open $csum_file
     }
-  } else {
+  )
+  
+  print "\n=== Verification Stage ===\n"
+  verify-checksum $filepath $checksum_content $distro $filename
+  
+  # GPG for Pop!_OS
+  if $distro == "pop_os" {
+    let url_var = (if $variant == "amd64" { "intel" } else { $variant })
+    let v = $channel_info.version
+    let b = $channel_info.build
+    let gpg_url = $"https://iso.pop-os.org/($v)/amd64/($url_var)/($b)/SHA256SUMS.gpg"
+    let csum_file = ($output_dir | path join "SHA256SUMS")
+    let gpg_file = ($output_dir | path join "SHA256SUMS.gpg")
+    
     print ""
-    print "Download-only mode: skipping write stage by request."
+    download-file $gpg_url $gpg_file
+    print ""
+    verify-gpg $csum_file $gpg_file
   }
+  
+  print "\n=== All Verifications Passed ==="
+  print $"File ready: ($filepath)"
 
-  print ""
-  print "To create bootable USB manually using dd:"
-  print $"sudo dd bs=4M if=($filepath) of=/dev/sdX status=progress conv=fsync"
-  print "(Replace /dev/sdX with your USB device - check with 'lsblk')"
-  print ""
-  print "Alternative method using mkusb-nox (interactive):"
-  print $"sudo mkusb-nox ($filepath) all"
-  print ""
-  print "Alternative method using grub-n-iso (usb-pack-efi):"
-  print $"sudo usb-pack-efi ($filepath)"
-  print "# Creates multiboot USB that can hold multiple ISOs"
-  print ""
-  print "Install mkusb if not available:"
-  print "sudo add-apt-repository --yes ppa:mkusb/ppa"
-  print "sudo apt update && sudo apt install --yes mkusb usb-pack-efi"
-  print ""
-  print "WARNING: Writing to wrong device will destroy all data on that device!"
+  # Write stage
+  if (not $download_only) and (not ($target_device | is-empty)) {
+    write-image $filepath $target_device $tool $distro
+  } else if $download_only {
+    print "\nDownload-only mode: skipping write stage."
+  } else {
+    print "\nNo device specified; skipping write stage."
+  }
 }
