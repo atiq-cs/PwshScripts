@@ -1,4 +1,5 @@
-# EditorConfig for consistent coding styles
+# EditorConfig for consistent coding styles, apply similar indent to all
+#  this file doesn't seem to be obeyed by VS Codium
 root = true
 
 [*]
@@ -7,6 +8,3 @@ indent_size = 2
 charset = utf-8
 trim_trailing_whitespace = true
 insert_final_newline = true
-
-[*.{nu,sh,js,ts,json,yml,yaml,md}]
-indent_size = 2
