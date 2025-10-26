@@ -47,9 +47,10 @@ def --env init-app [
         "/usr/bin",
         "/usr/sbin",
         "/usr/local/bin",
-        "/home/atiq/.local/sdkman/candidates/kotlin/current/bin",
-        "/home/atiq/.local/sdkman/candidates/java/current/bin",
-        "/home/atiq/.local/sdkman/candidates/gradle/current/bin"
+        ($env.HOME | path join '.local' 'sdkman' 'candidates' 'kotlin' 'current' 'bin'),
+        ($env.HOME | path join '.local' 'sdkman' 'candidates' 'java' 'current' 'bin'),
+        ($env.HOME | path join '.local' 'sdkman' 'candidates' 'gradle' 'current' 'bin'),
+        ($env.HOME | path join '.local' 'bin')  # chezmoi
       ]
 
       if ($nu.os-info.name != "windows") {
@@ -79,8 +80,13 @@ def --env init-app [
       print "Init: env.Path"
     }
     _ => {
-      print $"Invalid command line argument: ($app_name)"
-      # No change to Path for invalid arguments
+      error make {
+        msg: "Invalid argument",
+        label: {
+          text: $"Unknown app_name: ($app_name)",
+          span: (metadata $app_name).span
+        }
+      }
     }
   }
 }
