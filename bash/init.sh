@@ -59,9 +59,17 @@ shopt -s histappend
 export EDITOR=vim
 export VISUAL=$EDITOR
 
-# Change to custom shell directory on startup
-cd "$HOME/shell/bash" || exit
+# Change to custom shell directory on startup, except when shell did not start in $HOME
+# This lets tools like `chezmoi cd` keep their intended working directory.
+if [ "$PWD" = "$HOME" ]; then
+  pushd "$HOME/shell/bash" || exit
+fi
 
 # SDKMAN initialization (must remain at end of file)
 export SDKMAN_DIR="$HOME/.local/sdkman"
 [[ -s "$HOME/.local/sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.local/sdkman/bin/sdkman-init.sh"
+
+# chezmoi
+if [ -d "$HOME/.local/bin" ] ; then
+    export PATH="$PATH:$HOME/.local/bin"
+fi
