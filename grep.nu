@@ -6,17 +6,18 @@
 # Depends: Nushell core commands (glob, path, open, str)
 #
 # Usage:
-# ./grep.nu <directory> <file_pattern> <search_string>
+# ./grep.nu <directory> <file_pattern> <search_string> [--max-count <num>]
 #  - directory: Path to search (e.g., ~/project_name)
 #  - file_pattern: File matching pattern (e.g., "*.txt", "*.{rs,py,js}")
 #  - search_string: Text string to search for within files
+#  - --max-count: Maximum number of matches to show per file (default: 1)
 #  - Displays search parameters before showing results
 #  - Shows matching line with 1 line before and 1 line after (3 lines total)
 #
 # Examples:
 #   ./grep.nu ~/WS "*.txt" "TODO"
-#   ./grep.nu . "*.{md,rst}" "nushell"
-#   ./grep.nu /var/log "*.log" "ERROR"
+#   ./grep.nu . "*.{md,rst}" "nushell" --max-count 3
+#   ./grep.nu /var/log "*.log" "ERROR" --max-count 5
 #
 # Notes:
 #   - Not GNU grep; syntax differs.
@@ -33,6 +34,7 @@ def main [
   dir: path
   pattern: string
   needle: string
+  --max-count: int = 1  # Maximum number of matches to show per file
   # TODO: add case sensitivity option
 ] {
   # Validate directory exists before proceeding
@@ -49,7 +51,7 @@ def main [
 
 
   # Display search parameters
-  print $"haystack: ($dir)/($pattern) needle: ($needle)"
+  print $"haystack: ($dir)/($pattern) needle: ($needle) max-count: ($max_count)"
   print ""
 
 
@@ -76,13 +78,13 @@ def main [
       # Find all matching lines
       let matches = ($lines_list | where {|line| $line.item | str contains $needle})
       
-      # If there are matches, display them with context
+      # If there are matches, display them with context (limited by max-count)
       if ($matches | length) > 0 {
         let rel_path = ($p | path relative-to $root)
         print $"(ansi green_bold)($rel_path)(ansi reset)"
         
-        # For each match, show context
-        $matches | each {|match|
+        # Limit matches to max-count
+        $matches | first $max_count | each {|match|
           let line_num = $match.index
           let total_lines = ($lines_list | length)
           
