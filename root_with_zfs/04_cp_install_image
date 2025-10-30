@@ -1,0 +1,114 @@
+#!/bin/bash
+# -----------------------------------------------------------------------------
+# Script : root_with_zfs/04_cp_install_image.sh
+# Desc   : Copy Pop!_OS install from external SSD to ZFS root datasets
+# Date   : 10-30-2025
+#
+# Usage:
+#   sudo ./04_cp_install_image.sh /dev/sdb3
+#     - Source: ext4 root partition from installed Pop!_OS on external SSD
+#     - Target: rpool imported with altroot=/mnt, root dataset mounted at /
+#
+# Notes:
+#   - Requires rpool created and rpool/ROOT/pop exists (canmount=noauto)
+#   - Uses zpool import -N -R so datasets mount under /mnt
+#   - rsync excludes pseudo/volatile dirs; --delete is destructive by design
+#   - ESP copy is optional; verify contents and bootloader strategy (ZFSBootMenu/systemd-boot)
+#
+# Refs:
+#   - zpool import -N -R (altroot) and zpool sync
+#   - canmount=noauto semantics and zfs mount behavior
+#   - Common rsync excludes for root copies
+#
+# tag: linux-only, destructive
+# -----------------------------------------------------------------------------
+#
+# FS Layout of Install Image (pop_os installed into 2nd flash drive / SSD)
+# sudo sgdisk --print /dev/sdb
+# Disk /dev/sdb: 120164352 sectors, 57.3 GiB
+# Model:  SanDisk 3.2Gen1
+# Sector size (logical/physical): 512/512 bytes
+# Main partition table begins at sector 2 and ends at sector 33
+# First usable sector is 34, last usable sector is 120164318
+# Partitions will be aligned on 2048-sector boundaries
+# Total free space is 8129 sectors (4.0 MiB)
+#
+# Number  Start (sector)    End (sector)  Size       Code  Name
+#    1            4096         2097150   1022.0 MiB  EF00
+#    2         2097152        10485758   4.0 GiB     0700  recovery
+#    3        10485760       111771646   48.3 GiB    8300
+#    4       111771648       120160254   4.0 GiB     8200
+#
+# part#4 is 4GiB swap *
+# part 3 is the install image ~7GiB
+#
+# Parted view
+# $ sudo parted /dev/sdb unit MiB print
+# Number  Start     End       Size      File system     Name      Flags
+#  1      2.00MiB   1024MiB   1022MiB   fat32                     boot, esp
+#  2      1024MiB   5120MiB   4096MiB   fat32           recovery  msftdata
+#  3      5120MiB   54576MiB  49456MiB  ext4
+#  4      54576MiB  58672MiB  4096MiB   linux-swap(v1)            swap
+#
+
+set -euo pipefail
+
+if [[ $# -ne 1 ]]; then
+  echo "Usage: sudo $0 /dev/sdb3" >&2
+  exit 1
+fi
+SRC_PART="$1"
+
+# prepare to copy over the pop_os from install media (temp external SSD), say it is /dev/sdb
+sudo mkdir /mst
+sudo mount "${SRC_PART}" /mst
+sudo ls -alsh /mst
+
+# copy over root fs from install media
+sudo zpool import rpool -N -R /mnt
+# zfs mount -a won't mount 'noauto'
+sudo zfs mount rpool/ROOT/pop
+sudo zfs mount -a
+# sudo zfs mount rpool/home
+# sudo zfs mount rpool/var/log
+
+# make sure root dataset (rpool/ROOT/pop) is mounted
+zfs list -o name,mountpoint,canmount,mounted,refer
+
+# Add before chroot / ops on mounted root /mnt
+if ! mountpoint -q /mnt; then
+  echo "ERROR: /mnt is not a mountpoint, aborting next steps and chroot"
+  exit 1
+fi
+
+# zfs umount rpool/home before rsync if the dataset contains valuable data from
+#  prior installations, and then manually merge or copy
+# Copy with progress and minimal I/O overhead
+sudo rsync --archive \
+  --hard-links \
+  --acls \
+  --xattrs \
+  --one-file-system \
+  --numeric-ids \
+  --sparse \
+  --info=progress2 \
+  --human-readable \
+  --delete \
+  --exclude={'/dev/','/proc/','/sys/','/tmp/','/run/','/media/','/lost+found','/mnt/','/swapfile'} \
+  /mst/ /mnt/
+
+# Force pool sync for data integrity
+sudo zpool sync rpool
+
+# Release temp external SSD
+sudo umount /mst
+sudo eject "${SRC_PART}" || true
+sudo eject "${SRC_PART%[0-9]*}" || true
+
+# Observe which contains boot entries, KCL
+sudo mount "${SRC_PART%[0-9]*}1" /mst
+sudo ls -a /mst/EFI  # prefer /mst/EFI (UEFI ESP layout)
+# copy over entries from ESP / efi (/dev/sdb1) if necessary
+
+sudo umount /mst
+sudo rmdir /mst
