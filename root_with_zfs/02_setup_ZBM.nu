@@ -26,7 +26,6 @@
 # tag: linux-only, destructive
 # -----------------------------------------------------------------------------
 
-
 # Run this script after running "./create_gpt_partitions.sh"
 #  which creates GPT partitions (ESP 512MiB + ZFS pool)
 
@@ -78,6 +77,9 @@ sudo ls -lh $ZBM_DIR
 print "\nRegistering UEFI boot entries..."
 sudo efibootmgr --disk $DISK --part 1 --create --label "ZFSBootMenu" --loader '\EFI\ZBM\vmlinuz.efi'
 sudo efibootmgr --disk $DISK --part 1 --create --label "ZFSBootMenu Recovery" --loader '\EFI\ZBM\vmlinuz-rec.efi'
+
+# cleaning up boot mgr entries, N: entry number
+sudo efibootmgr --delete-bootnum --bootnum N
 
 if $env.LAST_EXIT_CODE == 0 {
   print "\nBoot entries registered successfully"
