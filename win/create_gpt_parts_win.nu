@@ -26,6 +26,9 @@
 # -----------------------------------------------------------------------------# 
 
 # clean up partition table, cmds ref: `admin/create_gpt_parts.sh`
+# TODO: add this to create_gpt_partitions.sh
+# backup Partition Table
+# sgdisk --backup=backup.gpt /dev/sda
 
 # Create base partitions: ESP, ZFS pool
 sudo ./create_gpt_partitions.sh --disk /dev/nvme0n1 --zfs-pool-size 256
@@ -55,4 +58,4 @@ sudo mkfs.exfat --volume-label Data --cluster-size 256KiB --verbose /dev/nvme0n1
 sudo sgdisk --sort /dev/nvme0n1
 sudo partprobe /dev/nvme0n1
 
-# Setup Bootloader - ZFS Boot Menu, cmds ref: `admin/create_gpt_parts.sh`
+# Setup Bootloader - ZFS Boot Menu, ref: root_with_zfs/02_setup_ZBM.nu
